@@ -1,0 +1,95 @@
+########################################
+# Global Logs & OS Files
+########################################
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.debug.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+.DS_Store
+Thumbs.db
+
+########################################
+# Environment Files (ALL)
+########################################
+.env
+.env.*
+*.env
+
+########################################
+# Archives (Prevent tracking binaries)
+########################################
+*.zip
+*.rar
+*.7z
+
+########################################
+# Node / Dependency Directories
+########################################
+**/node_modules
+**/dist
+**/build
+**/dist-ssr
+**/.vite
+**/coverage
+**/.nyc_output
+*.tsbuildinfo
+
+########################################
+# Temp & Cache
+########################################
+*.local
+*.temp
+*.tmp
+tmp/
+.cache/
+vite.config.ts.timestamp-*
+eslintcache
+
+########################################
+# Editors / IDE
+########################################
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+########################################
+# Frontend Specific
+# (Vite, React, Vue, etc.)
+########################################
+nadhii_gibee_district_administration_frontend/.env
+nadhii_gibee_district_administration_frontend/.vite
+nadhii_gibee_district_administration_frontend/node_modules
+nadhii_gibee_district_administration_frontend/dist
+nadhii_gibee_district_administration_frontend/dist-ssr
+
+########################################
+# Backend Specific (Express, Node)
+########################################
+nadhii_gibee_district_asministration_backend/node_modules
+nadhii_gibee_district_asministration_backend/dist
+nadhii_gibee_district_asministration_backend/build
+nadhii_gibee_district_asministration_backend/uploads
+nadhii_gibee_district_asministration_backend/tmp
+nadhii_gibee_district_asministration_backend/debug.log
+
+# PM2 logs or other runtime logs
+nadhii_gibee_district_asministration_backend/pids
+nadhii_gibee_district_asministration_backend/logs
+
+# Optional database files
+nadhii_gibee_district_asministration_backend/*.sqlite
+nadhii_gibee_district_asministration_backend/*.sqlite-journal

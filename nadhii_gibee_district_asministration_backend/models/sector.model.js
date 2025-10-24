@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const sectorSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -10,7 +12,7 @@ const sectorSchema = new mongoose.Schema(
     hours: String,
     services: [String],
     officials: [String],
-    stats: {
+    status: {
       type: Map,
       of: mongoose.Schema.Types.Mixed,
     },

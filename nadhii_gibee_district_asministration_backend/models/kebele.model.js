@@ -19,7 +19,7 @@ const kebeleSchema = new mongoose.Schema(
       phone: String,
       email: String,
     },
-    stats: {
+    status: {
       schools: Number,
       healthCenters: Number,
       roads: String,

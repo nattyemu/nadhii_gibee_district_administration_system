@@ -5,6 +5,7 @@ import newsArticleRouter from "./news/news.route.js";
 import cabineRouter from "./cabine/cabine.route.js";
 import sectorRouter from "./sector/sector.route.js";
 import uploadRouter from "./upload/upload.route.js";
+import kebeleRouter from "./kebele/kebele.route.js";
 
 const appRouter = Router();
 
@@ -18,5 +19,6 @@ appRouter.use("/news-article", newsArticleRouter);
 appRouter.use("/cabine", cabineRouter);
 appRouter.use("/upload", uploadRouter);
 appRouter.use("/sector", sectorRouter);
+appRouter.use("/kebele", kebeleRouter);
 
 export default appRouter;

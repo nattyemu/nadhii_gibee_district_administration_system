@@ -4,6 +4,12 @@ import { createSectorSchema, updateSectorSchema } from "./sector.schema.js";
 const transformSector = (sector) => {
   const sectorObj = sector.toObject();
   sectorObj.id = sectorObj._id.toString();
+
+  // Remove Map conversion since we're using Object type now
+  // if (sectorObj.status instanceof Map) {
+  //   sectorObj.status = Object.fromEntries(sectorObj.status);
+  // }
+
   delete sectorObj._id;
   delete sectorObj.__v;
   return sectorObj;
@@ -11,7 +17,15 @@ const transformSector = (sector) => {
 
 export const createSector = async (req, res) => {
   try {
+    // console.log("first", req.body);
     const validatedData = createSectorSchema.parse(req.body);
+    // console.log(validatedData);
+
+    // Remove Map conversion since we're using Object type now
+    // if (validatedData.status) {
+    //   validatedData.status = new Map(Object.entries(validatedData.status));
+    // }
+
     const sector = new Sector(validatedData);
     await sector.save();
 
@@ -99,6 +113,12 @@ export const getSector = async (req, res) => {
 export const updateSector = async (req, res) => {
   try {
     const validatedData = updateSectorSchema.parse(req.body);
+
+    // Remove Map conversion since we're using Object type now
+    // if (validatedData.status) {
+    //   validatedData.status = new Map(Object.entries(validatedData.status));
+    // }
+
     const sector = await Sector.findByIdAndUpdate(
       req.params.id,
       validatedData,

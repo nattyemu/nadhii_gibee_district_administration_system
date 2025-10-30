@@ -44,7 +44,7 @@ const sectorService = {
     } catch (error) {
       // console.error("Error creating sector:", error);
       return (
-        error.response?.data || {
+        error.response?.data?.details[0] || {
           success: false,
           message: "Failed to create sector",
           data: null,
@@ -62,7 +62,7 @@ const sectorService = {
     } catch (error) {
       // console.error("Error updating sector:", error);
       return (
-        error.response?.data || {
+        error.response?.data?.details[0] || {
           success: false,
           message: "Failed to update sector",
           data: null,

@@ -135,7 +135,11 @@ const AdminSectors = () => {
         );
         setShowSectorForm(false);
       } else {
-        toast.error(`Failed to ${isEditing ? "update" : "add"} sector`);
+        toast.error(
+          `Failed to ${isEditing ? "update" : "add"} sector ${
+            response ? `: ${response.message}` : ""
+          }`
+        );
       }
     } catch (error) {
       // console.error(

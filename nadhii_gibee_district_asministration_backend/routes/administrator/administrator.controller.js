@@ -52,14 +52,14 @@ const administratorController = {
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        console.log("ZOD ERRORS:", error.errors);
+        // console.log("ZOD ERRORS:", error.errors);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      console.error("Create administrator error:", error);
+      // console.error("Create administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -96,7 +96,7 @@ const administratorController = {
         count: formattedAdministrators.length,
       });
     } catch (error) {
-      console.error("Get administrators error:", error);
+      // console.error("Get administrators error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -148,7 +148,7 @@ const administratorController = {
           errors: error.errors,
         });
       }
-      console.error("Get administrator error:", error);
+      // console.error("Get administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -229,7 +229,7 @@ const administratorController = {
           errors: error.errors,
         });
       }
-      console.error("Update administrator error:", error);
+      // console.error("Update administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -264,7 +264,7 @@ const administratorController = {
           errors: error.errors,
         });
       }
-      console.error("Delete administrator error:", error);
+      // console.error("Delete administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -317,7 +317,7 @@ const administratorController = {
         count: formattedAdministrators.length,
       });
     } catch (error) {
-      console.error("Search administrators error:", error);
+      // console.error("Search administrators error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",

@@ -33,7 +33,7 @@ const LeaderProfile = () => {
           setAdministrator(null);
         }
       } catch (error) {
-        console.error("Error fetching administrator:", error);
+        // console.error("Error fetching administrator:", error);
         setAdministrator(null);
       } finally {
         setLoading(false);

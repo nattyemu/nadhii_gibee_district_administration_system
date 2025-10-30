@@ -11,6 +11,7 @@ import {
   Trash2,
   Image as ImageIcon,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 const AdministratorForm = ({
@@ -79,6 +80,7 @@ const AdministratorForm = ({
     setErrors({});
     setTouched({});
     setAchievementInput("");
+    setIsSubmitting(false); // Reset submitting state when form opens/closes
   }, [administratorData, isEditing, isOpen]);
 
   // Phone validation regex
@@ -260,6 +262,9 @@ const AdministratorForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent double submission
+    if (isSubmitting) return;
+
     // Mark all fields as touched to show all errors
     const allFields = [
       "name",
@@ -303,7 +308,8 @@ const AdministratorForm = ({
   const handleAddAchievement = () => {
     if (
       achievementInput.trim() &&
-      !formData.achievements.includes(achievementInput.trim())
+      !formData.achievements.includes(achievementInput.trim()) &&
+      !isSubmitting
     ) {
       setFormData((prev) => ({
         ...prev,
@@ -314,12 +320,14 @@ const AdministratorForm = ({
   };
 
   const handleRemoveAchievement = (achievementToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      achievements: prev.achievements.filter(
-        (achievement) => achievement !== achievementToRemove
-      ),
-    }));
+    if (!isSubmitting) {
+      setFormData((prev) => ({
+        ...prev,
+        achievements: prev.achievements.filter(
+          (achievement) => achievement !== achievementToRemove
+        ),
+      }));
+    }
   };
 
   const handleAchievementInputKeyPress = (e) => {
@@ -330,6 +338,8 @@ const AdministratorForm = ({
   };
 
   const handleImageUrlChange = (e) => {
+    if (isSubmitting) return;
+
     const url = e.target.value;
     setFormData((prev) => ({
       ...prev,
@@ -340,6 +350,8 @@ const AdministratorForm = ({
   };
 
   const handleFileChange = (e) => {
+    if (isSubmitting) return;
+
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
@@ -357,12 +369,20 @@ const AdministratorForm = ({
   };
 
   const clearImageSelection = () => {
+    if (isSubmitting) return;
+
     setImageFile(null);
     setImagePreview("");
     setFormData((prev) => ({
       ...prev,
       image: originalImage,
     }));
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onClose();
+    }
   };
 
   const getImageUrl = (imagePath) => {
@@ -388,8 +408,9 @@ const AdministratorForm = ({
             {isEditing ? "Edit Administrator" : "Add New Administrator"}
           </h2>
           <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="text-gray-400 hover:text-gray-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X size={24} />
           </button>
@@ -413,7 +434,8 @@ const AdministratorForm = ({
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   onBlur={() => handleBlur("name")}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                  disabled={isSubmitting}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     shouldShowError("name")
                       ? "border-red-500 focus:ring-red-500 bg-red-50"
                       : "border-gray-300 focus:ring-blue-500"
@@ -438,7 +460,8 @@ const AdministratorForm = ({
                   value={formData.title}
                   onChange={(e) => handleChange("title", e.target.value)}
                   onBlur={() => handleBlur("title")}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                  disabled={isSubmitting}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     shouldShowError("title")
                       ? "border-red-500 focus:ring-red-500 bg-red-50"
                       : "border-gray-300 focus:ring-blue-500"
@@ -467,7 +490,7 @@ const AdministratorForm = ({
                       shouldShowError("email")
                         ? "text-red-500"
                         : "text-gray-400"
-                    }`}
+                    } ${isSubmitting ? "opacity-50" : ""}`}
                   />
                   <input
                     type="email"
@@ -475,7 +498,8 @@ const AdministratorForm = ({
                     value={formData.email}
                     onChange={(e) => handleChange("email", e.target.value)}
                     onBlur={() => handleBlur("email")}
-                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                    disabled={isSubmitting}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       shouldShowError("email")
                         ? "border-red-500 focus:ring-red-500 bg-red-50"
                         : "border-gray-300 focus:ring-blue-500"
@@ -502,7 +526,7 @@ const AdministratorForm = ({
                       shouldShowError("phone")
                         ? "text-red-500"
                         : "text-gray-400"
-                    }`}
+                    } ${isSubmitting ? "opacity-50" : ""}`}
                   />
                   <input
                     type="tel"
@@ -510,7 +534,8 @@ const AdministratorForm = ({
                     value={formData.phone}
                     onChange={(e) => handleChange("phone", e.target.value)}
                     onBlur={() => handleBlur("phone")}
-                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                    disabled={isSubmitting}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       shouldShowError("phone")
                         ? "border-red-500 focus:ring-red-500 bg-red-50"
                         : "border-gray-300 focus:ring-blue-500"
@@ -543,7 +568,8 @@ const AdministratorForm = ({
                   value={formData.tenure}
                   onChange={(e) => handleChange("tenure", e.target.value)}
                   onBlur={() => handleBlur("tenure")}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                  disabled={isSubmitting}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                     shouldShowError("tenure")
                       ? "border-red-500 focus:ring-red-500 bg-red-50"
                       : "border-gray-300 focus:ring-blue-500"
@@ -569,7 +595,7 @@ const AdministratorForm = ({
                       shouldShowError("office")
                         ? "text-red-500"
                         : "text-gray-400"
-                    }`}
+                    } ${isSubmitting ? "opacity-50" : ""}`}
                   />
                   <input
                     type="text"
@@ -577,7 +603,8 @@ const AdministratorForm = ({
                     value={formData.office}
                     onChange={(e) => handleChange("office", e.target.value)}
                     onBlur={() => handleBlur("office")}
-                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                    disabled={isSubmitting}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                       shouldShowError("office")
                         ? "border-red-500 focus:ring-red-500 bg-red-50"
                         : "border-gray-300 focus:ring-blue-500"
@@ -604,7 +631,8 @@ const AdministratorForm = ({
                   <button
                     type="button"
                     onClick={clearImageSelection}
-                    className="text-sm text-red-600 hover:text-red-800"
+                    disabled={isSubmitting}
+                    className="text-sm text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Clear Image
                   </button>
@@ -614,37 +642,17 @@ const AdministratorForm = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Image Input */}
                 <div className="space-y-4">
-                  {/* URL Input */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image URL
-                    </label>
-                    <div className="relative">
-                      <Upload
-                        size={16}
-                        className="absolute left-3 top-3 text-gray-400"
-                      />
-                      <input
-                        type="text"
-                        value={formData.image}
-                        onChange={handleImageUrlChange}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="https://example.com/image.jpg"
-                        disabled={!!imageFile}
-                      />
-                    </div>
-                  </div>
-
                   {/* File Upload */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Or Upload Image File
+                      Upload Image File
                     </label>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -692,7 +700,8 @@ const AdministratorForm = ({
                 onChange={(e) => handleChange("bio", e.target.value)}
                 onBlur={() => handleBlur("bio")}
                 rows={4}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                   shouldShowError("bio")
                     ? "border-red-500 focus:ring-red-500 bg-red-50"
                     : "border-gray-300 focus:ring-blue-500"
@@ -721,7 +730,8 @@ const AdministratorForm = ({
                 onChange={(e) => handleChange("message", e.target.value)}
                 onBlur={() => handleBlur("message")}
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 ${
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                   shouldShowError("message")
                     ? "border-red-500 focus:ring-red-500 bg-red-50"
                     : "border-gray-300 focus:ring-blue-500"
@@ -745,21 +755,25 @@ const AdministratorForm = ({
                 <div className="relative flex-1">
                   <Award
                     size={16}
-                    className="absolute left-3 top-3 text-gray-400"
+                    className={`absolute left-3 top-3 text-gray-400 ${
+                      isSubmitting ? "opacity-50" : ""
+                    }`}
                   />
                   <input
                     type="text"
                     value={achievementInput}
                     onChange={(e) => setAchievementInput(e.target.value)}
                     onKeyPress={handleAchievementInputKeyPress}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Add an achievement and press Enter"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={handleAddAchievement}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center"
+                  disabled={isSubmitting || !achievementInput.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus size={16} className="mr-1" />
                   Add
@@ -775,7 +789,8 @@ const AdministratorForm = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveAchievement(achievement)}
-                      className="text-blue-600 hover:text-blue-800"
+                      disabled={isSubmitting}
+                      className="text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -789,21 +804,27 @@ const AdministratorForm = ({
           <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
             <button
               type="button"
-              onClick={onClose}
-              className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || Object.keys(errors).length > 0}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center min-w-[140px]"
             >
-              {isSubmitting
-                ? "Saving..."
-                : isEditing
-                ? "Update Administrator"
-                : "Add Administrator"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  {isEditing ? "Updating..." : "Saving..."}
+                </>
+              ) : isEditing ? (
+                "Update Administrator"
+              ) : (
+                "Add Administrator"
+              )}
             </button>
           </div>
         </form>

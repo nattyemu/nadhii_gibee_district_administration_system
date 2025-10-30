@@ -2,16 +2,7 @@ import { z } from "zod";
 
 // Common validation schemas
 const commonCabineValidations = {
-  name: z
-    .string({
-      required_error: "Cabine name is required",
-    })
-    .min(1, "Cabine name is required")
-    .regex(
-      /^[a-z0-9-\s]+$/,
-      "Name can only contain lowercase letters, numbers, spaces, and hyphens"
-    )
-    .transform((val) => val.trim().toLowerCase()),
+  name: z.string().min(1, { message: "Name is required" }),
 
   title: z
     .string({

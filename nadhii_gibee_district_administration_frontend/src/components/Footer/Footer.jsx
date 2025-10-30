@@ -4,55 +4,117 @@ import {
   Phone,
   Mail,
   Clock,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-  Linkedin,
   Heart,
   ArrowUp,
-  Shield,
-  Award,
+  History,
   Users,
-  Building,
+  Building2,
+  Newspaper,
+  FileText,
+  Landmark,
+  Target,
+  GitBranch,
 } from "lucide-react";
+import {
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
+  FaYoutube,
+  FaLinkedin,
+  FaTelegram,
+  FaTiktok,
+} from "react-icons/fa";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  const quickLinks = [
-    { name: "About Us", href: "/about" },
-    { name: "Services", href: "/investment-opportunities" },
-    { name: "Departments", href: "#" },
-    { name: "News & Updates", href: "/news" },
-    { name: "Contact Us", href: "/contact" },
-    { name: "FAQs", href: "#" },
+  // Updated to match navbar structure
+  const aboutLinks = [
+    {
+      name: "History",
+      href: "/history",
+      icon: History,
+    },
+    {
+      name: "Leadership",
+      href: "/leadership",
+      icon: Users,
+    },
+    {
+      name: "Structure",
+      href: "/structure",
+      icon: GitBranch,
+    },
+    {
+      name: "Vision & Mission",
+      href: "/vision",
+      icon: Target,
+    },
   ];
 
-  const services = [
-    { name: "Document Resourse", href: "#" },
-    { name: "Business Registration", href: "/business-resources" },
-    { name: "Permits & Licenses", href: "#" },
-    { name: "Health Resourse", href: "#" },
-    { name: "Education", href: "#" },
-    { name: "Agriculture Support", href: "/agricultural-resources" },
+  const governmentLinks = [
+    {
+      name: "Administrator",
+      href: "/administrator",
+      icon: Users,
+    },
+    {
+      name: "Cabinets",
+      href: "/cabinets",
+      icon: Landmark,
+    },
+    {
+      name: "Kebeles",
+      href: "/kebeles",
+      icon: Building2,
+    },
+    {
+      name: "Sectors",
+      href: "/sector",
+      icon: Building2,
+    },
   ];
 
-  const departments = [
-    { name: "Health Department", href: "#" },
-    { name: "Education Office", href: "#" },
-    { name: "Agriculture Bureau", href: "#" },
-    { name: "Trade & Industry", href: "#" },
-    { name: "Infrastructure", href: "#" },
-    { name: "Finance & Economy", href: "#" },
+  const mainLinks = [
+    {
+      name: "Home",
+      href: "/",
+      icon: Building2,
+    },
+    {
+      name: "News",
+      href: "/news",
+      icon: Newspaper,
+    },
+    {
+      name: "Resources",
+      href: "/agricultural-resources",
+      icon: FileText,
+    },
   ];
 
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "YouTube" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
+    {
+      icon: FaFacebook,
+      href: "https://www.facebook.com/kominikeeshinii.aanaaxirooafataa.7",
+      label: "Facebook",
+    },
+    {
+      icon: FaTwitter,
+      href: "https://x.com/GibeNadi37874?t=hatu6tXvy1BWKMhB4ghy3A&s=09",
+      label: "Twitter",
+    },
+    {
+      icon: FaTelegram,
+      href: "https://t.me/+uC110EIZRJ02ZTVk",
+      label: "Telegram",
+    },
+    { icon: FaYoutube, href: "https://www.youtube.com", label: "YouTube" },
+    {
+      icon: FaTiktok,
+      href: "https://www.tiktok.com/@nadigibecommunication?_t=ZM-8z6QcV6y7GS&_r=1",
+      label: "TikTok",
+    },
   ];
 
   const scrollToTop = () => {
@@ -73,15 +135,21 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand column */}
           <div className="lg:col-span-1">
-            <div className="flex items-center mb-6">
-              <div className="bg-yellow-500 rounded-full h-12 w-12 flex items-center justify-center mr-3">
-                <span className="text-[#21203C] font-bold text-xl">NG</span>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Nadhii Gibee District</h3>
-                <p className="text-[#E5E4FF] text-sm">Administration</p>
-              </div>
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center mb-6">
+              <a href="/" className="flex items-center">
+                <img
+                  src="/logo_jz.JPG"
+                  alt="Nadhii Gibee District  Administration Logo"
+                  className="h-10 w-auto mr-3 rounded-full"
+                />
+                <div>
+                  <h3 className="text-xl font-bold">Nadhii Gibee District </h3>
+                  <p className="text-[#E5E4FF] text-sm">Administration</p>
+                </div>
+              </a>
             </div>
+
             <p className="text-[#E5E4FF] mb-6 max-w-md">
               Serving the people of Nadhii Gibee District with dedication,
               transparency, and excellence in public service.
@@ -103,45 +171,71 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links column */}
+          {/* About Links column */}
           <div>
             <h3 className="text-lg font-bold mb-6 relative inline-block">
-              Quick Links
+              About Us
               <div className="absolute bottom-0 left-0 w-10 h-0.5 bg-yellow-400"></div>
             </h3>
             <ul className="space-y-3">
-              {quickLinks.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={link.href}
-                    className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-300 flex items-center"
-                  >
-                    <div className="w-1 h-1 bg-yellow-400 rounded-full mr-3"></div>
-                    {link.name}
-                  </a>
-                </li>
-              ))}
+              {aboutLinks.map((link, index) => {
+                const Icon = link.icon;
+                return (
+                  <li key={index}>
+                    <a
+                      href={link.href}
+                      className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-300 flex items-center"
+                    >
+                      <Icon size={16} className="mr-3 flex-shrink-0" />
+                      {link.name}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
-          {/* Services column */}
+          {/* Government & Main Links column */}
           <div>
             <h3 className="text-lg font-bold mb-6 relative inline-block">
-              Our Services
+              Government
               <div className="absolute bottom-0 left-0 w-10 h-0.5 bg-yellow-400"></div>
             </h3>
             <ul className="space-y-3">
-              {services.map((service, index) => (
-                <li key={index}>
-                  <a
-                    href={service.href}
-                    className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-300 flex items-center"
-                  >
-                    <div className="w-1 h-1 bg-yellow-400 rounded-full mr-3"></div>
-                    {service.name}
-                  </a>
-                </li>
-              ))}
+              {governmentLinks.map((link, index) => {
+                const Icon = link.icon;
+                return (
+                  <li key={index}>
+                    <a
+                      href={link.href}
+                      className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-300 flex items-center"
+                    >
+                      <Icon size={16} className="mr-3 flex-shrink-0" />
+                      {link.name}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* Separator */}
+            <div className="my-4 border-t border-[#2D2B4A]"></div>
+
+            <ul className="space-y-3">
+              {mainLinks.map((link, index) => {
+                const Icon = link.icon;
+                return (
+                  <li key={index}>
+                    <a
+                      href={link.href}
+                      className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-300 flex items-center"
+                    >
+                      <Icon size={16} className="mr-3 flex-shrink-0" />
+                      {link.name}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -171,7 +265,7 @@ const Footer = () => {
                   size={18}
                 />
                 <a
-                  href="tel:+251923428994"
+                  href="tel:+251471110000"
                   className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-300"
                 >
                   +251 92 342 8994
@@ -183,10 +277,10 @@ const Footer = () => {
                   size={18}
                 />
                 <a
-                  href="mailto:info@nadhiigibee.gov.et"
+                  href="mailto:info@jimmazone.gov.et"
                   className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-300"
                 >
-                  info@nadhiigibee.gov.et
+                  info@jimmazone.gov.et
                 </a>
               </div> */}
               <div className="flex items-center">

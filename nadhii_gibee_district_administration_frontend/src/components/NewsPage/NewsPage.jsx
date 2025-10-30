@@ -25,11 +25,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { toast } from "react-toastify";
+
 import newsService from "../../Service/newsArticle.js";
-import { useAuth } from "../../context/AuthContext";
-import ConfirmationModal from "./ConfirmationModal";
-import NewsForm from "./NewsForm";
 import backgroundImage from "../../assets/news_hero.jpg";
 const NewsPage = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -37,14 +34,6 @@ const NewsPage = () => {
   const [expandedArticle, setExpandedArticle] = useState(null);
   const [newsArticles, setNewsArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated, user } = useAuth();
-
-  // Modal states
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showNewsForm, setShowNewsForm] = useState(false);
-  const [articleToDelete, setArticleToDelete] = useState(null);
-  const [articleToEdit, setArticleToEdit] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   // Search and Pagination states
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,20 +54,20 @@ const NewsPage = () => {
   const fetchNews = async () => {
     try {
       const response = await newsService.getNewsArticles();
-      console.log("API Response:", response);
+      // console.log("API Response:", response);
       if (response.success) {
         setNewsArticles(response.data);
-        console.log("Total articles:", response.data.length);
-        console.log(
-          "Featured articles:",
-          response.data.filter((article) => article.featured).length
-        );
+        // console.log("Total articles:", response.data.length);
+        // console.log(
+        //   "Featured articles:",
+        //   response.data.filter((article) => article.featured).length
+        // );
       } else {
-        console.error("Failed to fetch news:", response.message);
+        // console.error("Failed to fetch news:", response.message);
         setNewsArticles([]);
       }
     } catch (error) {
-      console.error("Error fetching news:", error);
+      // console.error("Error fetching news:", error);
       setNewsArticles([]);
     } finally {
       setLoading(false);
@@ -133,112 +122,6 @@ const NewsPage = () => {
     setCurrentPage(pageNumber);
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleEdit = (article) => {
-    setArticleToEdit(article);
-    setIsEditing(true);
-    setShowNewsForm(true);
-  };
-
-  const handleDeleteClick = (article) => {
-    setArticleToDelete(article);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!articleToDelete) return;
-
-    try {
-      // Use the new method that deletes both news and image
-      const response = await newsService.deleteNewsWithImage(
-        articleToDelete.id,
-        articleToDelete.image
-      );
-
-      if (response.success) {
-        setNewsArticles((prev) =>
-          prev.filter((item) => item.id !== articleToDelete.id)
-        );
-        toast.success("News article deleted successfully!");
-      } else {
-        toast.error("Failed to delete news article: " + response.message);
-      }
-    } catch (error) {
-      console.error("Error deleting article:", error);
-      toast.error("Error deleting news article");
-    } finally {
-      setShowDeleteModal(false);
-      setArticleToDelete(null);
-    }
-  };
-
-  const handleAddNews = () => {
-    setArticleToEdit(null);
-    setIsEditing(false);
-    setShowNewsForm(true);
-  };
-
-  const handleSaveNews = async (
-    formData,
-    imageFile = null,
-    oldImageFilename = null
-  ) => {
-    try {
-      let response;
-
-      if (isEditing && articleToEdit) {
-        // Check if image needs to be updated
-        if (imageFile && oldImageFilename) {
-          // Use the combined update method that handles image replacement
-          response = await newsService.updateNewsWithImage(
-            articleToEdit.id,
-            formData,
-            imageFile,
-            oldImageFilename
-          );
-        } else {
-          // Regular update without image change
-          response = await newsService.updateNews({
-            ...formData,
-            id: articleToEdit.id,
-          });
-        }
-      } else {
-        // Add new news
-        if (imageFile) {
-          // Upload image first, then create news
-          const imageResponse = await newsService.uploadImage(
-            "news",
-            imageFile
-          );
-          if (imageResponse.success) {
-            response = await newsService.addNews({
-              ...formData,
-              image: imageResponse.url,
-            });
-          } else {
-            throw new Error("Failed to upload image");
-          }
-        } else {
-          response = await newsService.addNews(formData);
-        }
-      }
-
-      if (response.success) {
-        await fetchNews(); // Refresh the news list
-        toast.success(
-          isEditing ? "News updated successfully!" : "News added successfully!"
-        );
-      } else {
-        toast.error(
-          `Failed to ${isEditing ? "update" : "add"} news: ${response.message}`
-        );
-      }
-    } catch (error) {
-      console.error(`Error ${isEditing ? "updating" : "adding"} news:`, error);
-      toast.error(`Error ${isEditing ? "updating" : "adding"} news article`);
-    }
   };
 
   // Get featured article for the featured section
@@ -318,34 +201,6 @@ const NewsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F5F4FF] to-white">
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setArticleToDelete(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Delete News Article"
-        message={`Are you sure you want to delete "${articleToDelete?.title}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        type="danger"
-      />
-
-      {/* News Form Modal */}
-      <NewsForm
-        isOpen={showNewsForm}
-        onClose={() => {
-          setShowNewsForm(false);
-          setArticleToEdit(null);
-          setIsEditing(false);
-        }}
-        onSave={handleSaveNews}
-        newsData={articleToEdit}
-        isEditing={isEditing}
-      />
-
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-r from-[#21203C] to-[#2D2B4A] text-white overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-0"></div>
@@ -381,23 +236,6 @@ const NewsPage = () => {
           </div>
         </div>
       </section>
-
-      {/* Add News Button for Authenticated Users */}
-      {isAuthenticated() && (
-        <section className="py-4">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-end">
-              <button
-                onClick={handleAddNews}
-                className="bg-[#21203C] hover:bg-[#2D2B4A] text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center shadow-lg hover:shadow-xl"
-              >
-                <Plus size={20} className="mr-2" />
-                Add News
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Featured Article */}
       {featuredArticle && !searchTerm && (
@@ -598,24 +436,6 @@ const NewsPage = () => {
                         </div>
                       )}
                     </div>
-
-                    {/* Edit/Delete buttons for authenticated users */}
-                    {isAuthenticated() && (
-                      <div className="absolute top-4 right-4 flex space-x-2">
-                        <button
-                          onClick={() => handleEdit(article)}
-                          className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors duration-300 shadow-lg"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(article)}
-                          className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors duration-300 shadow-lg"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    )}
                   </div>
 
                   <div className={`p-5 ${viewMode === "list" && "w-2/3"}`}>
@@ -655,7 +475,7 @@ const NewsPage = () => {
                           {article.author}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-3">
+                      {/* <div className="flex items-center space-x-3">
                         <button className="text-gray-500 hover:text-[#21203C]">
                           <Heart size={16} />
                           <span className="text-xs ml-1">
@@ -668,7 +488,7 @@ const NewsPage = () => {
                         <button className="text-gray-500 hover:text-[#21203C]">
                           <Bookmark size={16} />
                         </button>
-                      </div>
+                      </div> */}
                     </div>
 
                     {expandedArticle === article.id && (

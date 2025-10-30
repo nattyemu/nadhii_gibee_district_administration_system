@@ -9,13 +9,13 @@ export default {
   getNewsArticles: async () => {
     try {
       const response = await axios.get(`/news-article/`);
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error fetching news articles:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error fetching news articles:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -29,13 +29,13 @@ export default {
   getUpdatedNewsArticles: async () => {
     try {
       const response = await axios.get(`/news-article/updated`);
-      console.log("updated article", response.data);
+      // console.log("updated article", response.data);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error fetching updated news articles:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error fetching updated news articles:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -49,13 +49,13 @@ export default {
   getNewsArticle: async (form) => {
     try {
       const response = await axios.get(`/news-article/${form.id}`);
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error fetching news article:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error fetching news article:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -75,10 +75,10 @@ export default {
       const response = await axios.post(`/upload/${type}`, formData);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error uploading image:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error uploading image:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -101,10 +101,10 @@ export default {
       const response = await axios.put(url, formData);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error updating image:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error updating image:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -119,10 +119,10 @@ export default {
       const response = await axios.delete(`/upload/${type}/${filename}`);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error deleting image:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error deleting image:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -134,10 +134,10 @@ export default {
 
   // News CRUD Methods
   updateNews: async (form) => {
-    console.log(form);
+    // console.log(form);
     try {
       const response = await axios.put(`/news-article/${form.id}`, form);
-      console.log(response);
+      // console.log(response);
       return response.data;
     } catch (error) {
       return (
@@ -150,10 +150,10 @@ export default {
   },
 
   deleteNews: async (form) => {
-    console.log(form);
+    // console.log(form);
     try {
       const response = await axios.delete(`/news-article/${form.id}`);
-      console.log(response);
+      // console.log(response);
       return response.data;
     } catch (error) {
       return (
@@ -166,10 +166,10 @@ export default {
   },
 
   addNews: async (form) => {
-    console.log(form);
+    // console.log(form);
     try {
       const response = await axios.post("/news-article/", form);
-      console.log(response);
+      // console.log(response);
       return response.data;
     } catch (error) {
       return (
@@ -210,7 +210,7 @@ export default {
         }
       }
 
-      console.log("Sending update data:", updatedData); // Add this to debug
+      // console.log("Sending update data:", updatedData); // Add this to debug
 
       // Update news with new data
       const newsResponse = await axios.put(
@@ -220,8 +220,8 @@ export default {
 
       return newsResponse.data;
     } catch (error) {
-      console.error("Error updating news with image:", error);
-      console.error("Error response:", error.response?.data); // Add this to see validation details
+      // console.error("Error updating news with image:", error);
+      // console.error("Error response:", error.response?.data); // Add this to see validation details
       return (
         error.response?.data || {
           success: false,
@@ -241,7 +241,7 @@ export default {
         imageFilename = urlParts[urlParts.length - 1];
       }
 
-      console.log(`Deleting news ${newsId} with image: ${imageFilename}`);
+      // console.log(`Deleting news ${newsId} with image: ${imageFilename}`);
 
       // Delete the news article first
       const newsResponse = await axios.delete(`/news-article/${newsId}`);
@@ -250,21 +250,21 @@ export default {
       if (newsResponse.data.success && imageFilename) {
         try {
           await axios.delete(`/upload/news/${imageFilename}`);
-          console.log(
-            `✅ Successfully deleted associated image: ${imageFilename}`
-          );
+          // console.log(
+          //   `✅ Successfully deleted associated image: ${imageFilename}`
+          // );
         } catch (imageError) {
-          console.warn(
-            `⚠️ Failed to delete image ${imageFilename}:`,
-            imageError.response?.data || imageError.message
-          );
+          // console.warn(
+          //   `⚠️ Failed to delete image ${imageFilename}:`,
+          //   imageError.response?.data || imageError.message
+          // );
           // Continue even if image deletion fails
         }
       }
 
       return newsResponse.data;
     } catch (error) {
-      console.error("❌ Error deleting news with image:", error);
+      // console.error("❌ Error deleting news with image:", error);
       return (
         error.response?.data || {
           success: false,
@@ -282,10 +282,10 @@ export default {
       });
       return response.data;
     } catch (error) {
-      console.error(
-        "Error bulk deleting images:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error bulk deleting images:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,

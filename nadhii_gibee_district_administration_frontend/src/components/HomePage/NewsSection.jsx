@@ -72,7 +72,7 @@ const NewsSection = () => {
         }
       } catch (err) {
         setError("Error connecting to server");
-        console.error("Error fetching news:", err);
+        // console.error("Error fetching news:", err);
       } finally {
         setLoading(false);
       }

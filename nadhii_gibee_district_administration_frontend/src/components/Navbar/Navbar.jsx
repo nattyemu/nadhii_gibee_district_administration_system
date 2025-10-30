@@ -112,27 +112,29 @@ const Navbar = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
-              <div className="flex items-center">
-                <div className="bg-yellow-500 rounded-full h-10 w-10 flex items-center justify-center mr-2">
-                  <span className="text-[#21203C] font-bold text-lg">NG</span>
-                </div>
+              <a href="/" className="flex items-center">
+                <img
+                  src="/logo_jz.JPG"
+                  alt="Nadhii Gibee District Administration Logo"
+                  className="h-10 w-auto mr-3 rounded-full"
+                />
                 <div className="hidden md:block">
                   <span
                     className={`text-xl font-bold ${
-                      isScrolled ? "text-[#21203C]" : "text-white"
+                      isScrolled ? "text-green-800" : "text-white"
                     }`}
                   >
                     Nadhii Gibee District
                   </span>
                   <span
                     className={`block text-xs ${
-                      isScrolled ? "text-gray-600" : "text-[#E5E4FF]"
+                      isScrolled ? "text-gray-600" : "text-green-100"
                     }`}
                   >
                     Administration
                   </span>
                 </div>
-              </div>
+              </a>
             </div>
 
             {/* Desktop Navigation */}

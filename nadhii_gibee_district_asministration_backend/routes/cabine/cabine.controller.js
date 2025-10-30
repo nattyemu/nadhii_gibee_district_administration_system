@@ -49,14 +49,14 @@ const cabineController = {
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        console.log("Zod validation error:", error.errors);
+        // console.log("Zod validation error:", error.errors);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      console.error("Create cabine error:", error);
+      // console.error("Create cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -70,7 +70,7 @@ const cabineController = {
     try {
       const { id } = req.params;
       const cabineData = req.body;
-
+      // console.log("Update request data:", cabineData);
       // Validate cabine exists
       const existingCabine = await Cabine.findById(id);
       if (!existingCabine) {
@@ -115,14 +115,14 @@ const cabineController = {
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        console.log("Zod validation error:", error.errors);
+        // console.log("Zod validation error:", error.issues);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      console.error("Update cabine error:", error);
+      // console.error("Update cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -144,7 +144,7 @@ const cabineController = {
         data: cabines.map((cabine) => transformCabineData(cabine)),
       });
     } catch (error) {
-      console.error("Get cabines error:", error);
+      // console.error("Get cabines error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -178,7 +178,7 @@ const cabineController = {
           errors: error.errors,
         });
       }
-      console.error("Get cabine error:", error);
+      // console.error("Get cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -214,7 +214,7 @@ const cabineController = {
           errors: error.errors,
         });
       }
-      console.error("Delete cabine error:", error);
+      // console.error("Delete cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",

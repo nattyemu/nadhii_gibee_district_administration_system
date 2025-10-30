@@ -4,13 +4,13 @@ export default {
   getAdministrators: async () => {
     try {
       const response = await axios.get(`/administrator/`);
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error fetching administrators:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error fetching administrators:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -24,13 +24,13 @@ export default {
   getAdministrator: async (form) => {
     try {
       const response = await axios.get(`/administrator/${form.id}`);
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error fetching administrator:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error fetching administrator:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -43,7 +43,7 @@ export default {
 
   // Add administrator with image
   addAdministrator: async (formData, imageFile = null) => {
-    console.log("Adding administrator:", formData);
+    // console.log("Adding administrator:", formData);
     try {
       let finalFormData = { ...formData };
 
@@ -62,10 +62,10 @@ export default {
       }
 
       const response = await axios.post("/administrator/", finalFormData);
-      console.log(response);
+      // console.log(response);
       return response.data;
     } catch (error) {
-      console.error("Error adding administrator:", error);
+      // console.error("Error adding administrator:", error);
       return (
         error.response?.data || {
           success: false,
@@ -81,7 +81,7 @@ export default {
     imageFile = null,
     oldImageFilename = null
   ) => {
-    console.log("Updating administrator:", formData);
+    // console.log("Updating administrator:", formData);
     try {
       let finalFormData = { ...formData };
 
@@ -105,10 +105,10 @@ export default {
         `/administrator/${formData.id}`,
         finalFormData
       );
-      console.log(response);
+      // console.log(response);
       return response.data;
     } catch (error) {
-      console.error("Error updating administrator:", error);
+      // console.error("Error updating administrator:", error);
       return (
         error.response?.data || {
           success: false,
@@ -120,10 +120,10 @@ export default {
 
   // Delete administrator
   deleteAdministrator: async (form) => {
-    console.log(form);
+    // console.log(form);
     try {
       const response = await axios.delete(`/administrator/${form.id}`);
-      console.log(response);
+      // console.log(response);
       return response.data;
     } catch (error) {
       return (
@@ -145,9 +145,9 @@ export default {
         imageFilename = urlParts[urlParts.length - 1];
       }
 
-      console.log(
-        `Deleting administrator ${administratorId} with image: ${imageFilename}`
-      );
+      // console.log(
+      //   `Deleting administrator ${administratorId} with image: ${imageFilename}`
+      // );
 
       // Delete the administrator first
       const adminResponse = await axios.delete(
@@ -158,21 +158,21 @@ export default {
       if (adminResponse.data.success && imageFilename) {
         try {
           await axios.delete(`/upload/administrator/${imageFilename}`);
-          console.log(
-            `✅ Successfully deleted associated image: ${imageFilename}`
-          );
+          // console.log(
+          //   `✅ Successfully deleted associated image: ${imageFilename}`
+          // );
         } catch (imageError) {
-          console.warn(
-            `⚠️ Failed to delete image ${imageFilename}:`,
-            imageError.response?.data || imageError.message
-          );
+          // console.warn(
+          //   `⚠️ Failed to delete image ${imageFilename}:`,
+          //   imageError.response?.data || imageError.message
+          // );
           // Continue even if image deletion fails
         }
       }
 
       return adminResponse.data;
     } catch (error) {
-      console.error("❌ Error deleting administrator with image:", error);
+      // console.error("❌ Error deleting administrator with image:", error);
       return (
         error.response?.data || {
           success: false,
@@ -191,10 +191,10 @@ export default {
       const response = await axios.post(`/upload/administrator`, formData);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error uploading administrator image:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error uploading administrator image:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -217,10 +217,10 @@ export default {
       const response = await axios.put(url, formData);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error updating administrator image:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error updating administrator image:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -236,10 +236,10 @@ export default {
       const response = await axios.delete(`/upload/administrator/${filename}`);
       return response.data;
     } catch (error) {
-      console.error(
-        "Error deleting administrator image:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error deleting administrator image:",
+      //   error.response?.data || error.message
+      // );
       return (
         error.response?.data || {
           success: false,
@@ -276,10 +276,10 @@ export default {
         );
       }
     } catch (error) {
-      console.error(
-        `Error ${isEditing ? "updating" : "adding"} administrator:`,
-        error
-      );
+      // console.error(
+      //   `Error ${isEditing ? "updating" : "adding"} administrator:`,
+      //   error
+      // );
       toast.error(`Error ${isEditing ? "updating" : "adding"} administrator`);
     }
   },

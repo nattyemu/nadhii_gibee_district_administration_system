@@ -63,7 +63,7 @@ const LeadershipPage = () => {
       if (cabinetsResponse.success) {
         setCabinets(cabinetsResponse.data);
       } else {
-        console.error("Failed to fetch cabinets:", cabinetsResponse.message);
+        // console.error("Failed to fetch cabinets:", cabinetsResponse.message);
         setCabinets([]);
       }
 
@@ -87,7 +87,7 @@ const LeadershipPage = () => {
         setAdministrator(null);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      // console.error("Error fetching data:", error);
       toast.error("Failed to load leadership data.");
       setCabinets([]);
       setAdministrator(null);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Building2,
   MapPin,
@@ -24,10 +24,15 @@ import {
   Eye,
 } from "lucide-react";
 import backgroundImage from "../../assets/sectore_bg.jpg";
+import sectorService from "../../Service/sectorService";
+
 const OfficesPage = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedOffice, setSelectedOffice] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [offices, setOffices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const officeCategories = [
     { id: "all", label: "All Sectors", icon: Building2 },
@@ -38,152 +43,77 @@ const OfficesPage = () => {
     { id: "infrastructure", label: "Infrastructure", icon: Car },
   ];
 
-  const offices = [
-    {
-      id: 1,
-      name: "Nadhii Gibee District Administration Sectors",
-      category: "administrative",
-      description:
-        "The main administrative center for Nadhii Gibee District governance and policy implementation.",
-      image:
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
-      address: "Jimma City Center, Main Road, Jimma",
-      phone: "+251 47 111 0000",
-      email: "admin@jimmazone.gov.et",
-      hours: "Mon-Fri: 8:30 AM - 5:30 PM, Sat: 9:00 AM - 12:00 PM",
-      services: [
-        "Document Services",
-        "Permits",
-        "Licenses",
-        "Public Information",
-      ],
-      officials: [
-        "Ato Kebede Chala - Chief Administrator",
-        "Woro Abebe Teshome - Deputy Administrator",
-      ],
-      stats: { employees: 150, departments: 12, serving: "2.5M people" },
-    },
-    {
-      id: 2,
-      name: "Health Department Sector",
-      category: "health",
-      description:
-        "Coordinating healthcare services and public health initiatives across Nadhii Gibee District.",
-      image:
-        "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
-      address: "Health Compound, Near Jimma Hospital, Jimma",
-      phone: "+251 47 111 0100",
-      email: "health@jimmazone.gov.et",
-      hours: "Mon-Fri: 8:00 AM - 5:00 PM, Sat: 9:00 AM - 1:00 PM",
-      services: [
-        "Health Programs",
-        "Disease Control",
-        "Hospital Coordination",
-        "Public Health",
-      ],
-      officials: [
-        "Dr. Selamawit Bekele - Head of Health",
-        "Dr. Mohammed Ahmed - Public Health Director",
-      ],
-      stats: { employees: 85, facilities: 47, serving: "All Kebeles" },
-    },
-    {
-      id: 3,
-      name: "Education Sector",
-      category: "education",
-      description:
-        "Overseeing educational institutions and programs throughout Nadhii Gibee District.",
-      image:
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
-      address: "Education Complex, Next to Jimma University, Jimma",
-      phone: "+251 47 111 0200",
-      email: "education@jimmazone.gov.et",
-      hours: "Mon-Fri: 8:30 AM - 5:30 PM",
-      services: [
-        "School Administration",
-        "Curriculum Development",
-        "Teacher Training",
-        "Student Programs",
-      ],
-      officials: [
-        "Woro Tigist Lemma - Education Head",
-        "Ato Solomon Bekele - Curriculum Director",
-      ],
-      stats: { employees: 120, schools: 350, students: "250,000+" },
-    },
-    {
-      id: 4,
-      name: "Agriculture Development Sector",
-      category: "agriculture",
-      description:
-        "Supporting farmers and agricultural development across Nadhii Gibee District.",
-      image:
-        "https://images.unsplash.com/photo-1625246335525-f887eccf60ff?auto=format&fit=crop&w=800&q=80",
-      address: "Agricultural Complex, Airport Road, Jimma",
-      phone: "+251 47 111 0300",
-      email: "agriculture@jimmazone.gov.et",
-      hours: "Mon-Fri: 8:00 AM - 5:00 PM",
-      services: [
-        "Farmer Support",
-        "Crop Development",
-        "Irrigation Programs",
-        "Market Access",
-      ],
-      officials: [
-        "Ato Jemal Hussein - Agriculture Head",
-        "Woro Aster Demissie - Rural Development Director",
-      ],
-      stats: { employees: 65, programs: 15, farmers: "100,000+" },
-    },
-    {
-      id: 5,
-      name: "Infrastructure Development Sector",
-      category: "infrastructure",
-      description:
-        "Managing infrastructure projects and public works across Nadhii Gibee District.",
-      image:
-        "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=800&q=80",
-      address: "Public Works Compound, Near Stadium, Jimma",
-      phone: "+251 47 111 0400",
-      email: "infrastructure@jimmazone.gov.et",
-      hours: "Mon-Fri: 8:30 AM - 5:30 PM",
-      services: [
-        "Road Construction",
-        "Building Projects",
-        "Urban Planning",
-        "Water Resources",
-      ],
-      officials: [
-        "Ato Daniel Mekonnen - Infrastructure Head",
-        "Ato Teshome Abebe - Urban Planning Director",
-      ],
-      stats: { employees: 90, projects: 25, roads: "1,200 km" },
-    },
-    {
-      id: 6,
-      name: "Finance and Economic Development Sector",
-      category: "administrative",
-      description:
-        "Managing budget, revenue, and economic development programs for Nadhii Gibee District.",
-      image:
-        "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80",
-      address: "Finance Building, City Center, Jimma",
-      phone: "+251 47 111 0500",
-      email: "finance@jimmazone.gov.et",
-      hours: "Mon-Fri: 8:30 AM - 5:30 PM",
-      services: [
-        "Budget Planning",
-        "Revenue Collection",
-        "Economic Development",
-        "Procurement",
-      ],
-      officials: [
-        "Ato Samuel Tadesse - Finance Head",
-        "Woro Hanna Girma - Economic Development Director",
-      ],
-      stats: { employees: 75, budget: "ETB 2.5B", projects: 30 },
-    },
-  ];
+  useEffect(() => {
+    fetchSectors();
+  }, []);
+
+  const fetchSectors = async () => {
+    try {
+      setLoading(true);
+      const response = await sectorService.getSectors();
+
+      if (response.success) {
+        // Transform the backend data to match our frontend structure
+        const transformedOffices = response.data.map((sector) => ({
+          id: sector.id,
+          name: sector.name,
+          category: sector.category,
+          description: sector.description,
+          image: sector.image
+            ? `${import.meta.env.VITE_BACKEND_URL || ""}${sector.image}`
+            : "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
+          address: sector.address,
+          phone: sector.phone,
+          email: sector.email,
+          hours: sector.hours,
+          services: sector.services || [],
+          officials: sector.officials || [],
+          stats: {
+            employees: sector.status?.employees || 0,
+            departments: sector.status?.departments || 0,
+            facilities: sector.status?.facilities || 0,
+            schools: sector.status?.schools || 0,
+            students: sector.status?.students || "",
+            programs: sector.status?.programs || 0,
+            farmers: sector.status?.farmers || "",
+            projects: sector.status?.projects || 0,
+            roads: sector.status?.roads || "",
+            budget: sector.status?.budget || "",
+            serving: getServingText(sector.category, sector.status),
+          },
+        }));
+
+        setOffices(transformedOffices);
+      } else {
+        setError(response.message || "Failed to fetch sectors");
+      }
+    } catch (err) {
+      // console.error("Error fetching sectors:", err);
+      setError("Failed to load sectors data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to generate serving text based on category and status
+  const getServingText = (category, status) => {
+    switch (category) {
+      case "health":
+        return status?.facilities
+          ? `${status.facilities} facilities`
+          : "All Kebeles";
+      case "education":
+        return status?.students;
+      case "agriculture":
+        return status?.farmers;
+      case "infrastructure":
+        return status?.roads;
+      case "administrative":
+        return "2.5M people";
+      default:
+        return "All Kebeles";
+    }
+  };
 
   const filteredOffices =
     activeCategory === "all"
@@ -198,6 +128,46 @@ const OfficesPage = () => {
         service.toLowerCase().includes(searchTerm.toLowerCase())
       )
   );
+
+  // Calculate statistics from actual data
+  const totalEmployees = offices.reduce(
+    (sum, office) => sum + (office.stats.employees || 0),
+    0
+  );
+  const totalServices = offices.reduce(
+    (sum, office) => sum + (office.services?.length || 0),
+    0
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#F5F4FF] to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#21203C] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading sectors data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#F5F4FF] to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-100 text-red-700 p-4 rounded-lg max-w-md">
+            <h2 className="text-xl font-bold mb-2">Error Loading Sectors</h2>
+            <p>{error}</p>
+            <button
+              onClick={fetchSectors}
+              className="mt-4 bg-[#21203C] hover:bg-[#2D2B4A] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F5F4FF] to-white">
@@ -239,21 +209,27 @@ const OfficesPage = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-[#21203C] rounded-full text-white mb-2">
                 <Building2 size={24} />
               </div>
-              <div className="text-2xl font-bold text-gray-900">15</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {offices.length}
+              </div>
               <div className="text-gray-600">Government Sectors</div>
             </div>
             <div className="bg-blue-50 rounded-xl p-4 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-700 rounded-full text-white mb-2">
                 <Users size={24} />
               </div>
-              <div className="text-2xl font-bold text-gray-900">285+</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {totalEmployees}+
+              </div>
               <div className="text-gray-600">Government Employees</div>
             </div>
             <div className="bg-amber-50 rounded-xl p-4 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-700 rounded-full text-white mb-2">
                 <Award size={24} />
               </div>
-              <div className="text-2xl font-bold text-gray-900">120+</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {totalServices}+
+              </div>
               <div className="text-gray-600">Services Offered</div>
             </div>
             <div className="bg-purple-50 rounded-xl p-4 text-center">
@@ -492,8 +468,11 @@ const OfficesPage = () => {
                     Sector Statistics
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(selectedOffice.stats).map(
-                      ([key, value], index) => (
+                    {Object.entries(selectedOffice.stats)
+                      .filter(
+                        ([key, value]) => value && value !== "" && value !== 0
+                      )
+                      .map(([key, value], index) => (
                         <div
                           key={index}
                           className="bg-gray-50 rounded-lg p-3 text-center"
@@ -503,13 +482,12 @@ const OfficesPage = () => {
                             {key.replace(/([A-Z])/g, " $1")}
                           </div>
                         </div>
-                      )
-                    )}
+                      ))}
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <button className="bg-[#21203C] hover:bg-[#2D2B4A] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300 flex items-center">
                   <Navigation size={18} className="mr-2" />
                   Get Directions
@@ -518,7 +496,7 @@ const OfficesPage = () => {
                   <Calendar size={18} className="mr-2" />
                   Schedule Visit
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

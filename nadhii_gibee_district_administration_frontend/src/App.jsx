@@ -30,18 +30,19 @@ import AgriculturalResourcesPage from "./components/ServicesPage/AgriculturalRes
 import LoginModal from "./components/Login/LoginModal";
 import WellKnownFor from "./components/HomePage/WellKnownFor";
 import InvestmentOpportunities from "./components/HomePage/InvestmentOpportunities";
+import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated() ? children : <Navigate to="/admin" replace />;
+};
 
 // Protected Route component for login page
 const LoginRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-
-  // If user is already authenticated, redirect to home page
-  if (isAuthenticated()) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
+  return isAuthenticated() ? <Navigate to="/dashboard" replace /> : children;
 };
+
 function App() {
   return (
     <Router>
@@ -80,6 +81,14 @@ function App() {
                     <LoginModal onClose={() => window.history.back()} />
                   </>
                 </LoginRoute>
+              }
+            />
+            <Route
+              path="/dashboard/*"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
               }
             />
             <Route

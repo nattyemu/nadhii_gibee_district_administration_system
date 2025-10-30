@@ -18,7 +18,7 @@ const decodeJWT = (token) => {
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error("Error decoding JWT:", error);
+    // console.error("Error decoding JWT:", error);
     return null;
   }
 };
@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     // console.log("Attempting login with:", email, password);
-    console.log(BASE_URL);
+    // console.log(BASE_URL);
     try {
       const response = await axios.post(`${BASE_URL}/api/user/login`, {
         email,
@@ -128,8 +128,7 @@ export const AuthProvider = ({ children }) => {
           isLoading: false,
         });
 
-        // Redirect to frontend base URL after successful login
-        window.location.href = FRONTEND_URL || "/";
+        navigate("/dashboard", { replace: true });
 
         return { success: true, role: decoded.role };
       }
@@ -145,7 +144,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     sessionStorage.removeItem("authToken");
     setAuthState({ token: null, user: null, isLoading: false });
-    navigate("/", { replace: true });
+    navigate("/admin", { replace: true });
   };
 
   const isAuthenticated = () => {

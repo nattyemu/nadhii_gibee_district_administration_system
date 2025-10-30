@@ -24,23 +24,13 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useAuth } from "../../context/AuthContext";
 import cabineService from "../../Service/cabinesService";
-import ConfirmationModal from "../NewsPage/ConfirmationModal";
-import CabineForm from "./CabineForm";
 import backgroundImage from "../../assets/cabines_hero.jpg";
 
 const CabinetsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [cabinets, setCabinets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated, user } = useAuth();
-
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showCabineForm, setShowCabineForm] = useState(false);
-  const [cabinetToDelete, setCabinetToDelete] = useState(null);
-  const [cabinetToEdit, setCabinetToEdit] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   const iconComponents = {
     Shield,
@@ -104,53 +94,15 @@ const CabinetsPage = () => {
         }));
         setCabinets(cabinetsWithDefaults);
       } else {
-        console.error("Failed to fetch cabinets:", response.message);
+        // console.error("Failed to fetch cabinets:", response.message);
         setCabinets([]);
       }
     } catch (error) {
-      console.error("Error fetching cabinets:", error);
+      // console.error("Error fetching cabinets:", error);
       toast.error("Failed to load cabinets. Please check your connection.");
       setCabinets([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleEdit = (cabinet) => {
-    setCabinetToEdit(cabinet);
-    setIsEditing(true);
-    setShowCabineForm(true);
-  };
-
-  const handleDeleteClick = (cabinet) => {
-    setCabinetToDelete(cabinet);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!cabinetToDelete) return;
-
-    try {
-      const response = await cabineService.deleteCabinetWithImages(
-        cabinetToDelete.id
-      );
-
-      if (response.success) {
-        setCabinets((prev) =>
-          prev.filter((cab) => cab.id !== cabinetToDelete.id)
-        );
-        toast.success("Cabinet deleted successfully!");
-      } else {
-        toast.error("Failed to delete cabinet: " + response.message);
-      }
-    } catch (error) {
-      console.error("Error deleting cabinet:", error);
-      toast.error(
-        "Error deleting cabinet: " + (error.message || "Unknown error")
-      );
-    } finally {
-      setShowDeleteModal(false);
-      setCabinetToDelete(null);
     }
   };
 
@@ -159,52 +111,6 @@ const CabinetsPage = () => {
     if (imagePath.startsWith("http")) return imagePath;
     if (imagePath.startsWith("blob:")) return imagePath;
     return `${import.meta.env.VITE_BACKEND_URL || ""}${imagePath}`;
-  };
-
-  const handleAddCabinet = () => {
-    setCabinetToEdit(null);
-    setIsEditing(false);
-    setShowCabineForm(true);
-  };
-
-  const handleSaveCabinet = async (cabinetData, imageFile) => {
-    try {
-      let response;
-
-      if (isEditing && cabinetToEdit) {
-        response = await cabineService.updateCabinetWithImage(
-          cabinetToEdit.id,
-          cabinetData,
-          imageFile
-        );
-      } else {
-        response = await cabineService.createCabinetWithImage(
-          cabinetData,
-          imageFile
-        );
-      }
-
-      if (response.success) {
-        await fetchCabinets();
-        toast.success(
-          isEditing
-            ? "Cabinet updated successfully!"
-            : "Cabinet added successfully!"
-        );
-      } else {
-        toast.error(
-          `Failed to ${isEditing ? "update" : "add"} cabinet: ${
-            response.message
-          }`
-        );
-      }
-    } catch (error) {
-      console.error(
-        `Error ${isEditing ? "updating" : "adding"} cabinet:`,
-        error
-      );
-      toast.error(`Error ${isEditing ? "updating" : "adding"} cabinet`);
-    }
   };
 
   const getIconComponent = (iconName) => {
@@ -232,32 +138,6 @@ const CabinetsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F5F4FF] to-white">
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setCabinetToDelete(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Cabinet"
-        message={`Are you sure you want to delete the "${cabinetToDelete?.title}" cabinet? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        type="danger"
-      />
-
-      <CabineForm
-        isOpen={showCabineForm}
-        onClose={() => {
-          setShowCabineForm(false);
-          setCabinetToEdit(null);
-          setIsEditing(false);
-        }}
-        onSave={handleSaveCabinet}
-        cabinetData={cabinetToEdit}
-        isEditing={isEditing}
-      />
-
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-r from-[#21203C] to-[#2D2B4A] text-white overflow-hidden">
         <div className="absolute inset-0 bg-black/40 z-0"></div>
@@ -281,20 +161,6 @@ const CabinetsPage = () => {
           </div>
         </div>
       </section>
-
-      {/* Add Cabinet Button */}
-      {isAuthenticated() && (
-        <section className="py-4">
-          <div className="container mx-auto px-4 flex justify-end">
-            <button
-              onClick={handleAddCabinet}
-              className="bg-[#21203C] hover:bg-[#2D2B4A] text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center shadow-lg hover:shadow-xl"
-            >
-              <Plus size={20} className="mr-2" /> Add Cabinet
-            </button>
-          </div>
-        </section>
-      )}
 
       {/* Search Section */}
       <section className="py-8 text-gray-900 bg-[#F5F4FF]">
@@ -362,30 +228,6 @@ const CabinetsPage = () => {
                       })}
                     </div>
                   </div>
-
-                  {/* Edit/Delete */}
-                  {isAuthenticated() && (
-                    <div className="absolute top-4 left-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(cabinet);
-                        }}
-                        className="bg-[#21203C] text-white p-2 rounded-full hover:bg-[#2D2B4A] transition-colors duration-300 shadow-lg"
-                      >
-                        <Edit size={14} />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteClick(cabinet);
-                        }}
-                        className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors duration-300 shadow-lg"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 {/* Cabinet Info */}

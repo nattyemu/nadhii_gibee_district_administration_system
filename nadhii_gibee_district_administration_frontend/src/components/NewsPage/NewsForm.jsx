@@ -7,6 +7,7 @@ import {
   User,
   Tag,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
 
 const NewsForm = ({
@@ -98,6 +99,7 @@ const NewsForm = ({
     }
     setErrors({});
     setTagInput("");
+    setIsSubmitting(false);
   }, [newsData, isEditing, isOpen]);
 
   const validateForm = () => {
@@ -138,6 +140,9 @@ const NewsForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent double submission
+    if (isSubmitting) return;
+
     if (!validateForm()) {
       return;
     }
@@ -154,13 +159,14 @@ const NewsForm = ({
       await onSave(formData, imageFile, oldImageFilename);
       onClose();
     } catch (error) {
-      console.error("Error saving news:", error);
+      // console.error("Error saving news:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleAddTag = () => {
+    if (isSubmitting) return;
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
       setFormData((prev) => ({
         ...prev,
@@ -171,6 +177,7 @@ const NewsForm = ({
   };
 
   const handleRemoveTag = (tagToRemove) => {
+    if (isSubmitting) return;
     setFormData((prev) => ({
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
@@ -185,6 +192,7 @@ const NewsForm = ({
   };
 
   const handleImageUrlChange = (e) => {
+    if (isSubmitting) return;
     const url = e.target.value;
     setFormData((prev) => ({
       ...prev,
@@ -195,6 +203,7 @@ const NewsForm = ({
   };
 
   const handleFileChange = (e) => {
+    if (isSubmitting) return;
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
@@ -212,12 +221,19 @@ const NewsForm = ({
   };
 
   const clearImageSelection = () => {
+    if (isSubmitting) return;
     setImageFile(null);
     setImagePreview("");
     setFormData((prev) => ({
       ...prev,
       image: originalImage,
     }));
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onClose();
+    }
   };
 
   const getImageUrl = (imagePath) => {
@@ -238,8 +254,9 @@ const NewsForm = ({
             {isEditing ? "Edit News Article" : "Add New News Article"}
           </h2>
           <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="text-gray-400 hover:text-gray-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X size={24} />
           </button>
@@ -263,8 +280,8 @@ const NewsForm = ({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    // COLOR CHANGE: green-500 -> blue-500
+                  disabled={isSubmitting}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                     errors.title ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter news title"
@@ -286,7 +303,8 @@ const NewsForm = ({
                       category: e.target.value,
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" // COLOR CHANGE: green-500 -> blue-500
+                  disabled={isSubmitting}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {categories.map((category) => (
                     <option key={category.value} value={category.value}>
@@ -307,8 +325,8 @@ const NewsForm = ({
                   setFormData((prev) => ({ ...prev, excerpt: e.target.value }))
                 }
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  // COLOR CHANGE: green-500 -> blue-500
+                disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                   errors.excerpt ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter brief excerpt"
@@ -331,7 +349,8 @@ const NewsForm = ({
                   setFormData((prev) => ({ ...prev, content: e.target.value }))
                 }
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" // COLOR CHANGE: green-500 -> blue-500
+                disabled={isSubmitting}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Enter full content (optional)"
               />
             </div>
@@ -346,7 +365,8 @@ const NewsForm = ({
                   <button
                     type="button"
                     onClick={clearImageSelection}
-                    className="text-sm text-red-600 hover:text-red-800"
+                    disabled={isSubmitting}
+                    className="text-sm text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Clear Image
                   </button>
@@ -356,30 +376,6 @@ const NewsForm = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Image Input */}
                 <div className="space-y-4">
-                  {/* URL Input */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image URL
-                    </label>
-                    <div className="relative">
-                      <Upload
-                        size={16}
-                        className="absolute left-3 top-3 text-gray-400"
-                      />
-                      <input
-                        type="text"
-                        value={formData.image}
-                        onChange={handleImageUrlChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          // COLOR CHANGE: green-500 -> blue-500
-                          errors.image ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="https://example.com/image.jpg"
-                        disabled={!!imageFile}
-                      />
-                    </div>
-                  </div>
-
                   {/* File Upload */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -389,7 +385,8 @@ const NewsForm = ({
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" // COLOR CHANGE: green-500 -> blue-500
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
 
@@ -438,7 +435,8 @@ const NewsForm = ({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, type: e.target.value }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" // COLOR CHANGE: green-500 -> blue-500
+                  disabled={isSubmitting}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {contentTypes.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -455,7 +453,9 @@ const NewsForm = ({
                 <div className="relative">
                   <Calendar
                     size={16}
-                    className="absolute left-3 top-3 text-gray-400"
+                    className={`absolute left-3 top-3 text-gray-400 ${
+                      isSubmitting ? "opacity-50" : ""
+                    }`}
                   />
                   <input
                     type="date"
@@ -463,8 +463,8 @@ const NewsForm = ({
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, date: e.target.value }))
                     }
-                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      // COLOR CHANGE: green-500 -> blue-500
+                    disabled={isSubmitting}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                       errors.date ? "border-red-500" : "border-gray-300"
                     }`}
                   />
@@ -487,7 +487,9 @@ const NewsForm = ({
                 <div className="relative">
                   <User
                     size={16}
-                    className="absolute left-3 top-3 text-gray-400"
+                    className={`absolute left-3 top-3 text-gray-400 ${
+                      isSubmitting ? "opacity-50" : ""
+                    }`}
                   />
                   <input
                     type="text"
@@ -498,8 +500,8 @@ const NewsForm = ({
                         author: e.target.value,
                       }))
                     }
-                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      // COLOR CHANGE: green-500 -> blue-500
+                    disabled={isSubmitting}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                       errors.author ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Enter author name"
@@ -517,7 +519,9 @@ const NewsForm = ({
                 <div className="relative">
                   <MapPin
                     size={16}
-                    className="absolute left-3 top-3 text-gray-400"
+                    className={`absolute left-3 top-3 text-gray-400 ${
+                      isSubmitting ? "opacity-50" : ""
+                    }`}
                   />
                   <input
                     type="text"
@@ -528,8 +532,8 @@ const NewsForm = ({
                         location: e.target.value,
                       }))
                     }
-                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      // COLOR CHANGE: green-500 -> blue-500
+                    disabled={isSubmitting}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                       errors.location ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Enter location"
@@ -550,21 +554,25 @@ const NewsForm = ({
                 <div className="relative flex-1">
                   <Tag
                     size={16}
-                    className="absolute left-3 top-3 text-gray-400"
+                    className={`absolute left-3 top-3 text-gray-400 ${
+                      isSubmitting ? "opacity-50" : ""
+                    }`}
                   />
                   <input
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyPress={handleTagInputKeyPress}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" // COLOR CHANGE: green-500 -> blue-500
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Add a tag and press Enter"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={handleAddTag}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200" // COLOR CHANGE: green-600 -> blue-600, green-700 -> blue-700
+                  disabled={isSubmitting || !tagInput.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add
                 </button>
@@ -573,13 +581,14 @@ const NewsForm = ({
                 {formData.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm" // COLOR CHANGE: bg-green-100 -> bg-blue-100, text-green-800 -> text-blue-800
+                    className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="ml-2 text-blue-600 hover:text-blue-800" // COLOR CHANGE: text-green-600 -> text-blue-600, hover:text-green-800 -> hover:text-blue-800
+                      disabled={isSubmitting}
+                      className="ml-2 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <X size={14} />
                     </button>
@@ -600,7 +609,8 @@ const NewsForm = ({
                       featured: e.target.checked,
                     }))
                   }
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" // COLOR CHANGE: text-green-600 -> text-blue-600, focus:ring-green-500 -> focus:ring-blue-500
+                  disabled={isSubmitting}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <span className="ml-2 text-sm text-gray-700">
                   Featured Article
@@ -616,7 +626,8 @@ const NewsForm = ({
                       urgent: e.target.checked,
                     }))
                   }
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" // COLOR CHANGE: text-green-600 -> text-blue-600, focus:ring-green-500 -> focus:ring-blue-500
+                  disabled={isSubmitting}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <span className="ml-2 text-sm text-gray-700">Urgent News</span>
               </label>
@@ -627,21 +638,27 @@ const NewsForm = ({
           <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
             <button
               type="button"
-              onClick={onClose}
-              className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" // COLOR CHANGE: bg-green-600 -> bg-blue-600, hover:bg-green-700 -> hover:bg-blue-700
+              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center min-w-[120px]"
             >
-              {isSubmitting
-                ? "Saving..."
-                : isEditing
-                ? "Update News"
-                : "Add News"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  {isEditing ? "Updating..." : "Saving..."}
+                </>
+              ) : isEditing ? (
+                "Update News"
+              ) : (
+                "Add News"
+              )}
             </button>
           </div>
         </form>

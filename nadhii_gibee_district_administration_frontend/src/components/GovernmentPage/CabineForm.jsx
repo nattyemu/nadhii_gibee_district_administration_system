@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { X, Upload, Mail, Phone, Building2, User, Image } from "lucide-react";
+import {
+  X,
+  Upload,
+  Mail,
+  Phone,
+  Building2,
+  User,
+  Image,
+  Loader2,
+} from "lucide-react";
 import { toast } from "react-toastify";
 
 const CabineForm = ({
@@ -20,7 +29,7 @@ const CabineForm = ({
 
   const [imageFile, setImageFile] = useState(null);
   const [originalImage, setOriginalImage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Function to get image URL
   const getImageUrl = (imagePath) => {
@@ -44,6 +53,7 @@ const CabineForm = ({
       setOriginalImage("");
       setImageFile(null);
     }
+    setIsSubmitting(false);
   }, [isOpen, isEditing]);
 
   // Effect 2: Load data when editing EXISTING cabinet
@@ -66,6 +76,7 @@ const CabineForm = ({
   }, [isOpen, isEditing, cabinetData]);
 
   const handleInputChange = (field, value) => {
+    if (isSubmitting) return;
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -73,6 +84,7 @@ const CabineForm = ({
   };
 
   const handleImageChange = (file) => {
+    if (isSubmitting) return;
     if (file) {
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
@@ -84,6 +96,7 @@ const CabineForm = ({
   };
 
   const clearImage = () => {
+    if (isSubmitting) return;
     setImageFile(null);
     setFormData((prev) => ({
       ...prev,
@@ -100,15 +113,6 @@ const CabineForm = ({
     ) {
       toast.error(
         "Please fill all required fields (Name, Title, Position, and Image)"
-      );
-      return false;
-    }
-
-    // ✅ UPDATED: Allow letters (both cases), numbers, hyphens, and spaces
-    const nameRegex = /^[a-zA-Z0-9-\s]+$/;
-    if (!nameRegex.test(formData.name)) {
-      toast.error(
-        "Name can only contain letters, numbers, spaces, and hyphens"
       );
       return false;
     }
@@ -137,11 +141,14 @@ const CabineForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent double submission
+    if (isSubmitting) return;
+
     if (!validateForm()) {
       return;
     }
 
-    setLoading(true);
+    setIsSubmitting(true);
 
     try {
       const saveData = {
@@ -158,12 +165,18 @@ const CabineForm = ({
       await onSave(saveData, imageFile);
       onClose();
     } catch (error) {
-      console.error("Error saving cabinet:", error);
+      // console.error("Error saving cabinet:", error);
       toast.error(
         "Error saving cabinet: " + (error.message || "Unknown error")
       );
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onClose();
     }
   };
 
@@ -181,8 +194,9 @@ const CabineForm = ({
             </h2>
           </div>
           <button
-            onClick={onClose}
-            className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-200 p-1 rounded-full hover:bg-white hover:bg-opacity-10"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="text-[#E5E4FF] hover:text-yellow-400 transition-colors duration-200 p-1 rounded-full hover:bg-white hover:bg-opacity-10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X size={24} />
           </button>
@@ -212,7 +226,8 @@ const CabineForm = ({
                     required
                     value={formData.title}
                     onChange={(e) => handleInputChange("title", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="e.g., Finance Office"
                   />
                 </div>
@@ -229,7 +244,8 @@ const CabineForm = ({
                     onChange={(e) =>
                       handleInputChange("position", e.target.value)
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="e.g., Finance Manager"
                   />
                 </div>
@@ -244,7 +260,8 @@ const CabineForm = ({
                     required
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="e.g., Finance Office or finance-office"
                     pattern="[a-zA-Z0-9-\s]+"
                     title="Only letters, numbers, spaces, and hyphens allowed"
@@ -281,7 +298,8 @@ const CabineForm = ({
                       accept="image/*"
                       required={!isEditing || !formData.image}
                       onChange={(e) => handleImageChange(e.target.files[0])}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#21203C] file:text-white hover:file:bg-[#2D2B4A] transition-colors"
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#21203C] file:text-white hover:file:bg-[#2D2B4A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
 
@@ -289,7 +307,8 @@ const CabineForm = ({
                     <button
                       type="button"
                       onClick={clearImage}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
+                      disabled={isSubmitting}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Clear Image
                     </button>
@@ -336,7 +355,8 @@ const CabineForm = ({
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="+251 XX XXX XXXX or 0XXXXXXXXX"
                     pattern="^(0\d{9}|\+\d{12})$"
                   />
@@ -355,7 +375,8 @@ const CabineForm = ({
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#21203C] focus:border-[#21203C] bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="cabine@domain.gov.et"
                   />
                   <p className="text-xs text-gray-600">
@@ -370,20 +391,21 @@ const CabineForm = ({
           <div className="flex justify-end space-x-3 p-6 border-t border-gray-300 bg-gray-50">
             <button
               type="button"
-              onClick={onClose}
-              className="px-6 py-3 text-sm font-medium text-[#21203C] bg-white border border-gray-300 rounded-lg hover:bg-[#F5F4FF] transition-colors duration-200"
+              onClick={handleClose}
+              disabled={isSubmitting}
+              className="px-6 py-3 text-sm font-medium text-[#21203C] bg-white border border-gray-300 rounded-lg hover:bg-[#F5F4FF] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="px-6 py-3 text-sm font-medium text-white bg-[#21203C] rounded-lg hover:bg-[#2D2B4A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center space-x-2"
+              disabled={isSubmitting}
+              className="px-6 py-3 text-sm font-medium text-white bg-[#21203C] rounded-lg hover:bg-[#2D2B4A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center space-x-2 min-w-[140px]"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Saving...</span>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>{isEditing ? "Updating..." : "Saving..."}</span>
                 </>
               ) : isEditing ? (
                 "Update Cabine"

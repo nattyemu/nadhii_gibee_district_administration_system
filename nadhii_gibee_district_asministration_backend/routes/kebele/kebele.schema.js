@@ -8,7 +8,7 @@ export const createKebeleSchema = z.object({
   population: z.string().optional(),
   area: z.string().optional(),
   elevation: z.string().optional(),
-  image: z.url().optional(),
+  image: z.string().optional(),
   description: z.string().optional(),
   features: z.array(z.string()).optional(),
   contact: z
@@ -40,7 +40,7 @@ export const updateKebeleSchema = z.object({
   population: z.string().optional(),
   area: z.string().optional(),
   elevation: z.string().optional(),
-  image: z.url().optional(),
+  image: z.string().optional(),
   description: z.string().optional(),
   features: z.array(z.string()).optional(),
   contact: z
@@ -48,7 +48,6 @@ export const updateKebeleSchema = z.object({
       administrator: z.string().optional(),
       phone: z.string().optional(),
       email: z
-        .string()
         .email({ message: "Invalid email format" })
         .optional()
         .or(z.literal("")),

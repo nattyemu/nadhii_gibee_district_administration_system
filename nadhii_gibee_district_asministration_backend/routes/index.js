@@ -6,6 +6,7 @@ import cabineRouter from "./cabine/cabine.route.js";
 import sectorRouter from "./sector/sector.route.js";
 import uploadRouter from "./upload/upload.route.js";
 import kebeleRouter from "./kebele/kebele.route.js";
+import dashboardRoutes from "./dashboard/dashboard.route.js";
 
 const appRouter = Router();
 
@@ -20,5 +21,6 @@ appRouter.use("/cabine", cabineRouter);
 appRouter.use("/upload", uploadRouter);
 appRouter.use("/sector", sectorRouter);
 appRouter.use("/kebele", kebeleRouter);
+appRouter.use("/dashboard", dashboardRoutes);
 
 export default appRouter;

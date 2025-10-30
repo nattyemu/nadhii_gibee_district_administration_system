@@ -35,7 +35,7 @@ export const createSector = async (req, res) => {
       message: "Sector created successfully",
     });
   } catch (error) {
-    console.log(error.issues || error);
+    // console.log(error.issues || error);
     if (error.name === "ZodError") {
       return res.status(400).json({
         success: false,

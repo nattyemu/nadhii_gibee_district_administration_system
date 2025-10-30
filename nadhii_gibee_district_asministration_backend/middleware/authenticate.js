@@ -21,7 +21,7 @@ const authenticate = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error("JWT verification error:", err); // ✅ Debug log
+    // console.error("JWT verification error:", err); // ✅ Debug log
     return res
       .status(403)
       .json({ success: false, message: "Invalid or expired token" });

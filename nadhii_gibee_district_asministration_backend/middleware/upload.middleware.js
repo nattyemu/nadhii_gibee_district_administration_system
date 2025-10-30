@@ -4,12 +4,12 @@ import fs from "fs";
 
 // Ensure upload directories exist
 const ensureUploadDirs = () => {
-  const types = ["news", "cabines", "administrator"];
+  const types = ["news", "cabines", "administrator", "kebeles", "sectors"];
   types.forEach((type) => {
     const dir = path.join(process.cwd(), "public", "img", type);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
-      console.log(`Created directory: ${dir}`);
+      // console.log(`Created directory: ${dir}`);
     }
   });
 };

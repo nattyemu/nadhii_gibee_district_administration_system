@@ -41,14 +41,14 @@ const newsArticleController = {
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        console.log(error);
+        // console.log(error);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      console.error("Create article error:", error);
+      // console.error("Create article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -98,7 +98,7 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      console.error("Get articles error:", error);
+      // console.error("Get articles error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -135,7 +135,7 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      console.error("Get article error:", error);
+      // console.error("Get article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -170,7 +170,7 @@ const newsArticleController = {
         data: transformed,
       });
     } catch (error) {
-      console.error("Get updated articles error:", error);
+      // console.error("Get updated articles error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -228,7 +228,7 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      console.error("Update article error:", error);
+      // console.error("Update article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -263,7 +263,7 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      console.error("Delete article error:", error);
+      // console.error("Delete article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",

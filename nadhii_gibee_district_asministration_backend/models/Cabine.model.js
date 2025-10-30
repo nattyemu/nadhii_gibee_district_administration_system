@@ -7,11 +7,6 @@ const cabineSchema = new mongoose.Schema(
       required: [true, "Cabine name is required"],
       unique: true,
       trim: true,
-      lowercase: true,
-      match: [
-        /^[a-z0-9-\s]+$/,
-        "Name can only contain lowercase letters, numbers, and hyphens",
-      ],
     },
     title: {
       type: String,

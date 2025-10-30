@@ -687,7 +687,7 @@ const InvestmentOpportunitiesPage = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* <div className="flex flex-col sm:flex-row gap-4">
                 <button className="flex-1 bg-[#21203C] hover:bg-[#2D2B4A] text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
                   {selectedOpportunity.onlineAvailable
                     ? "Apply Online"
@@ -702,7 +702,7 @@ const InvestmentOpportunitiesPage = () => {
                   <Phone size={18} className="mr-2" />
                   Schedule Meeting
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

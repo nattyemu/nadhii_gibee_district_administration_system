@@ -10,9 +10,6 @@ import dashboardRoutes from "./dashboard/dashboard.route.js";
 
 const appRouter = Router();
 
-// REMOVED static file serving from here since it's now in app.js
-// Static files are now served directly from the main app
-
 // API routes
 appRouter.use("/user", usersRouter);
 appRouter.use("/administrator", administratorRouter);

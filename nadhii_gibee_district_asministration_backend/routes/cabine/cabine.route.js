@@ -5,11 +5,11 @@ import rateLimiters from "../../middleware/rateLimiters.js";
 
 const router = express.Router();
 
-// ========== PUBLIC ROUTES ==========
+//  PUBLIC ROUTES
 router.get("/", cabineController.getCabines);
 router.get("/:id", cabineController.getCabine);
 
-// ========== PROTECTED ROUTES (Admin only) ==========
+// PROTECTED ROUTES (Admin only)
 router.post("/", authenticate, rateLimiters, cabineController.createCabine);
 router.put("/:id", authenticate, rateLimiters, cabineController.updateCabine);
 router.delete(

@@ -6,7 +6,6 @@ import rateLimiters from "../../middleware/rateLimiters.js";
 
 const router = express.Router();
 
-// CREATE
 router.post(
   "/",
   authenticate,
@@ -15,12 +14,10 @@ router.post(
   administratorController.createAdministrator
 );
 
-// READ
 router.get("/", administratorController.getAdministrators);
 router.get("/search", administratorController.searchAdministrators);
 router.get("/:id", administratorController.getAdministrator);
 
-// UPDATE
 router.put(
   "/:id",
   authenticate,
@@ -29,7 +26,6 @@ router.put(
   administratorController.updateAdministrator
 );
 
-// DELETE
 router.delete(
   "/:id",
   authenticate,

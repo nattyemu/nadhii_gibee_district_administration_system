@@ -16,7 +16,6 @@ export const Category = {
 };
 
 export const newsSchema = {
-  // CREATE - Create new news article
   create: z.object({
     title: z
       .string()
@@ -74,7 +73,6 @@ export const newsSchema = {
     urgent: z.boolean().optional().default(false),
   }),
 
-  // UPDATE - Update news article
   update: z.object({
     title: z
       .string()
@@ -121,12 +119,10 @@ export const newsSchema = {
     urgent: z.boolean().optional(),
   }),
 
-  // GET/DELETE - by ID
   byId: z.object({
     id: z.string().min(1, "Article ID is required"),
   }),
 
-  // Query parameters for filtering
   query: z.object({
     type: z
       .enum([ContentType.NEWS, ContentType.ANNOUNCEMENT, ContentType.EVENT])

@@ -1,8 +1,6 @@
-// services/dashboardService.js
 import axios from "../Utilities/Axios";
 
 const dashboardService = {
-  // Get dashboard statistics
   getDashboardStats: async () => {
     try {
       const response = await axios.get("/dashboard/stats");

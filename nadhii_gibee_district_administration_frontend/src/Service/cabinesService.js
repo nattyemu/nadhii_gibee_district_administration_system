@@ -1,7 +1,6 @@
 import axios from "../Utilities/Axios";
 
 const cabineService = {
-  // Get all cabinets
   getCabinets: async () => {
     try {
       const response = await axios.get("/cabine");
@@ -18,7 +17,6 @@ const cabineService = {
     }
   },
 
-  // Get single cabinet by ID
   getCabinet: async (id) => {
     try {
       const response = await axios.get(`/cabine/${id}`);
@@ -35,7 +33,6 @@ const cabineService = {
     }
   },
 
-  // Create new cabinet
   createCabinet: async (cabineData) => {
     // console.log("Creating cabinet with data:", cabineData);
     try {
@@ -53,7 +50,6 @@ const cabineService = {
     }
   },
 
-  // Update cabinet
   updateCabinet: async (id, cabinetData) => {
     // console.log("Updating cabinet with ID:", id, "Data:", cabinetData);
     try {
@@ -71,7 +67,6 @@ const cabineService = {
     }
   },
 
-  // Delete cabinet
   deleteCabinet: async (id) => {
     try {
       const response = await axios.delete(`/cabine/${id}`);
@@ -88,7 +83,6 @@ const cabineService = {
     }
   },
 
-  // Upload image for cabinet
   uploadImage: async (folder, imageFile) => {
     try {
       const formData = new FormData();
@@ -119,7 +113,6 @@ const cabineService = {
     }
   },
 
-  // Delete image file
   deleteImage: async (imageUrl) => {
     try {
       if (
@@ -155,7 +148,6 @@ const cabineService = {
     }
   },
 
-  // Create cabinet with image upload (SIMPLIFIED)
   createCabinetWithImage: async (cabineData, imageFile) => {
     // console.log("Creating cabinet with image. Cabine Data:", cabineData);
     try {
@@ -197,7 +189,6 @@ const cabineService = {
     }
   },
 
-  // Update cabinet with image upload (SIMPLIFIED)
   updateCabinetWithImage: async (id, cabineData, imageFile) => {
     // console.log(
     //   "Updating cabinet with image. Cabine ID:",
@@ -273,7 +264,6 @@ const cabineService = {
     }
   },
 
-  // Delete cabinet with image cleanup (SIMPLIFIED)
   deleteCabinetWithImages: async (id) => {
     try {
       // First, get cabinet data to identify image

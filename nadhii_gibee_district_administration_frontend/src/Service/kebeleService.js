@@ -88,7 +88,6 @@ const kebeleService = {
     }
   },
 
-  // Upload image for kebele
   uploadImage: async (folder, imageFile) => {
     try {
       const formData = new FormData();
@@ -119,7 +118,6 @@ const kebeleService = {
     }
   },
 
-  // Delete image file
   deleteImage: async (imageUrl) => {
     try {
       if (
@@ -155,7 +153,6 @@ const kebeleService = {
     }
   },
 
-  // Create kebele with image upload
   createKebeleWithImage: async (kebeleData, imageFile) => {
     // console.log("Creating kebele with image. Kebele Data:", kebeleData);
     try {
@@ -197,7 +194,6 @@ const kebeleService = {
     }
   },
 
-  // Update kebele with image upload
   updateKebeleWithImage: async (id, kebeleData, imageFile) => {
     // console.log(
     //   "Updating kebele with image. Kebele ID:",
@@ -273,7 +269,6 @@ const kebeleService = {
     }
   },
 
-  // Delete kebele with image cleanup
   deleteKebeleWithImages: async (id) => {
     try {
       // First, get kebele data to identify image

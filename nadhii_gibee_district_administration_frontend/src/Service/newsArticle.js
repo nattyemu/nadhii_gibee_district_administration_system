@@ -1,9 +1,6 @@
 import axios from "../Utilities/Axios";
 
-// Create a self-reference for internal method calls
-const api = {
-  // Your methods will go here
-};
+// news article service to handle all news article related api calls
 
 export default {
   getNewsArticles: async () => {

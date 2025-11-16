@@ -1,5 +1,5 @@
 import axios from "../Utilities/Axios";
-
+// sector service to handle all sector related api calls
 const sectorService = {
   // Get all sectors
   getSectors: async () => {

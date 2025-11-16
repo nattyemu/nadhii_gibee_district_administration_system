@@ -1,5 +1,5 @@
 import axios from "../Utilities/Axios";
-
+// user service to handle all user related api calls
 export default {
   getUsers: async () => {
     try {

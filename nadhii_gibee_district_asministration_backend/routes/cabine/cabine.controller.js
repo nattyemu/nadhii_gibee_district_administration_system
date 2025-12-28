@@ -1,20 +1,19 @@
-import { Cabine } from "../../models/Cabine.model.js";
 import { cabineSchema } from "./cabine.schema.js";
+import { db, schema } from "../../config/db.js";
+import { eq, and, not } from "drizzle-orm";
 
-// Helper function to transform cabine data
 const transformCabineData = (cabine) => {
-  const cabineData = cabine.toObject ? cabine.toObject() : cabine;
   return {
-    id: cabineData._id,
-    name: cabineData.name,
-    title: cabineData.title,
-    position: cabineData.position,
-    image: cabineData.image,
-    phone: cabineData.phone,
-    email: cabineData.email,
-    order: cabineData.order,
-    createdAt: cabineData.createdAt,
-    updatedAt: cabineData.updatedAt,
+    id: cabine.id,
+    name: cabine.name,
+    title: cabine.title,
+    position: cabine.position,
+    image: cabine.image,
+    phone: cabine.phone,
+    email: cabine.email,
+    order: cabine.order,
+    createdAt: cabine.createdAt,
+    updatedAt: cabine.updatedAt,
   };
 };
 
@@ -28,9 +27,12 @@ const cabineController = {
       const validatedCabineData = cabineSchema.create.parse(cabineData);
 
       // Check if cabine name already exists
-      const existingCabine = await Cabine.findOne({
-        name: validatedCabineData.name,
-      });
+      const [existingCabine] = await db
+        .select()
+        .from(schema.cabines)
+        .where(eq(schema.cabines.name, validatedCabineData.name))
+        .limit(1);
+
       if (existingCabine) {
         return res.status(400).json({
           success: false,
@@ -39,8 +41,14 @@ const cabineController = {
       }
 
       // Create the cabine
-      const newCabine = new Cabine(validatedCabineData);
-      await newCabine.save();
+      const [result] = await db
+        .insert(schema.cabines)
+        .values(validatedCabineData);
+
+      const [newCabine] = await db
+        .select()
+        .from(schema.cabines)
+        .where(eq(schema.cabines.id, Number(result.insertId)));
 
       return res.status(201).json({
         success: true,
@@ -49,14 +57,12 @@ const cabineController = {
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        // console.log("Zod validation error:", error.errors);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      // console.error("Create cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -70,9 +76,21 @@ const cabineController = {
     try {
       const { id } = req.params;
       const cabineData = req.body;
-      // console.log("Update request data:", cabineData);
+      const cabineId = parseInt(id);
+
+      if (isNaN(cabineId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid cabine ID",
+        });
+      }
+
       // Validate cabine exists
-      const existingCabine = await Cabine.findById(id);
+      const [existingCabine] = await db
+        .select()
+        .from(schema.cabines)
+        .where(eq(schema.cabines.id, cabineId));
+
       if (!existingCabine) {
         return res.status(404).json({
           success: false,
@@ -85,10 +103,17 @@ const cabineController = {
 
       // If name is being updated, check if new name already exists
       if (validatedCabineData.name) {
-        const cabineWithSameName = await Cabine.findOne({
-          name: validatedCabineData.name,
-          _id: { $ne: id },
-        });
+        const [cabineWithSameName] = await db
+          .select()
+          .from(schema.cabines)
+          .where(
+            and(
+              eq(schema.cabines.name, validatedCabineData.name),
+              not(eq(schema.cabines.id, cabineId))
+            )
+          )
+          .limit(1);
+
         if (cabineWithSameName) {
           return res.status(400).json({
             success: false,
@@ -98,15 +123,18 @@ const cabineController = {
       }
 
       // Update cabine
-      const updatedCabine = await Cabine.findByIdAndUpdate(
-        id,
-        { $set: validatedCabineData },
-        {
-          new: true,
-          runValidators: true,
-          select: "-__v",
-        }
-      );
+      await db
+        .update(schema.cabines)
+        .set({
+          ...validatedCabineData,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.cabines.id, cabineId));
+
+      const [updatedCabine] = await db
+        .select()
+        .from(schema.cabines)
+        .where(eq(schema.cabines.id, cabineId));
 
       return res.status(200).json({
         success: true,
@@ -115,14 +143,12 @@ const cabineController = {
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        // console.log("Zod validation error:", error.issues);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      // console.error("Update cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -134,9 +160,10 @@ const cabineController = {
   // READ - Get all cabines
   getCabines: async (req, res) => {
     try {
-      const cabines = await Cabine.find()
-        .sort({ order: 1, createdAt: 1 })
-        .select("-__v");
+      const cabines = await db
+        .select()
+        .from(schema.cabines)
+        .orderBy(schema.cabines.order, schema.cabines.createdAt);
 
       return res.status(200).json({
         success: true,
@@ -144,7 +171,6 @@ const cabineController = {
         data: cabines.map((cabine) => transformCabineData(cabine)),
       });
     } catch (error) {
-      // console.error("Get cabines error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -156,8 +182,20 @@ const cabineController = {
   getCabine: async (req, res) => {
     try {
       const validatedParams = cabineSchema.byId.parse(req.params);
+      const id = parseInt(validatedParams.id);
 
-      const cabine = await Cabine.findById(validatedParams.id).select("-__v");
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid cabine ID",
+        });
+      }
+
+      const [cabine] = await db
+        .select()
+        .from(schema.cabines)
+        .where(eq(schema.cabines.id, id));
+
       if (!cabine) {
         return res.status(404).json({
           success: false,
@@ -178,7 +216,6 @@ const cabineController = {
           errors: error.errors,
         });
       }
-      // console.error("Get cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -190,8 +227,20 @@ const cabineController = {
   deleteCabine: async (req, res) => {
     try {
       const validatedParams = cabineSchema.byId.parse(req.params);
+      const id = parseInt(validatedParams.id);
 
-      const cabine = await Cabine.findById(validatedParams.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid cabine ID",
+        });
+      }
+
+      const [cabine] = await db
+        .select()
+        .from(schema.cabines)
+        .where(eq(schema.cabines.id, id));
+
       if (!cabine) {
         return res.status(404).json({
           success: false,
@@ -200,7 +249,7 @@ const cabineController = {
       }
 
       // Delete the cabine
-      await Cabine.findByIdAndDelete(validatedParams.id);
+      await db.delete(schema.cabines).where(eq(schema.cabines.id, id));
 
       return res.status(200).json({
         success: true,
@@ -214,7 +263,6 @@ const cabineController = {
           errors: error.errors,
         });
       }
-      // console.error("Delete cabine error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",

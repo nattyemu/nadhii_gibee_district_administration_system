@@ -190,8 +190,8 @@ const VisionMissionPage = () => {
                 </p>
                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                   <p className="text-blue-800 font-medium italic">
-                    "To be Ethiopia's leading zone in sustainable development,
-                    innovation, and community wellbeing by 2035."
+                    "To be a leading district in sustainable development,
+                    agricultural innovation, and community wellbeing by 2030."
                   </p>
                 </div>
               </div>

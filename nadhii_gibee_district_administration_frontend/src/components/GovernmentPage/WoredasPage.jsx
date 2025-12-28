@@ -81,7 +81,14 @@ const WoredasPage = () => {
       setLoading(false);
     }
   };
-
+  const capitalizeWords = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   const currentWoreda = woredas.find((woreda) => woreda.id === activeWoreda);
   const filteredWoredas = woredas.filter(
     (woreda) =>
@@ -305,7 +312,9 @@ const WoredasPage = () => {
                           : "bg-gray-100 text-gray-700 hover:bg-[#21203C]/5"
                       }`}
                     >
-                      <div className="font-medium">{woreda.name}</div>
+                      <div className="font-medium">
+                        {capitalizeWords(woreda.name)}
+                      </div>
                       <div
                         className={`text-sm ${
                           activeWoreda === woreda.id
@@ -376,7 +385,7 @@ const WoredasPage = () => {
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
                       <h2 className="text-2xl font-bold">
-                        {currentWoreda.name} Kebele
+                        {capitalizeWords(currentWoreda.name)} Kebele
                       </h2>
                       <p className="text-[#21203C]/80">{currentWoreda.type}</p>
                     </div>
@@ -428,7 +437,7 @@ const WoredasPage = () => {
 
                     <div className="mb-6">
                       <h3 className="text-xl font-bold text-gray-900 mb-2">
-                        About {currentWoreda.name}
+                        About {capitalizeWords(currentWoreda.name)}
                       </h3>
                       <p className="text-gray-600">
                         {currentWoreda.description}

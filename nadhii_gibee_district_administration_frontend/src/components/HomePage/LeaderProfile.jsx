@@ -142,8 +142,8 @@ const LeaderProfile = () => {
               </div>
               <div className="text-center p-4 bg-white/50 rounded-lg">
                 <MapPin className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-[#1a1a2e]">21</div>
-                <div className="text-sm text-[#1a1a2e]">Woredas</div>
+                <div className="text-2xl font-bold text-[#1a1a2e]">25</div>
+                <div className="text-sm text-[#1a1a2e]">Kebeles</div>
               </div>
               <div className="text-center p-4 bg-yellow-50 rounded-lg">
                 <Star className="w-8 h-8 text-[#1a1a2e] mx-auto mb-2" />

@@ -1,25 +1,20 @@
-import Administrator from "../../models/administrator.model.js";
 import administratorSchema from "./administrator.schema.js";
+import { db, schema } from "../../config/db.js";
+import { eq, like, and, not } from "drizzle-orm";
 
 const administratorController = {
   // CREATE - Add new administrator
   createAdministrator: async (req, res) => {
     try {
       const validatedData = administratorSchema.create.parse(req.body);
-      //  Check if the woreda already has an administrator
-      const existingZoneAdmin = await Administrator.findOne({
-        zone: validatedData.zone,
-      });
-      if (existingZoneAdmin) {
-        return res.status(400).json({
-          success: false,
-          message: `Zone "${validatedData.zone}" already has an administrator.`,
-        });
-      }
+
       // Check if email already exists
-      const existingAdmin = await Administrator.findOne({
-        email: validatedData.email,
-      });
+      const [existingAdmin] = await db
+        .select()
+        .from(schema.administrators)
+        .where(eq(schema.administrators.email, validatedData.email))
+        .limit(1);
+
       if (existingAdmin) {
         return res.status(400).json({
           success: false,
@@ -27,39 +22,46 @@ const administratorController = {
         });
       }
 
-      const newAdministrator = new Administrator(validatedData);
-      await newAdministrator.save();
-
-      // Format response to match your desired structure
-      const responseData = {
-        id: newAdministrator._id,
-        name: newAdministrator.name,
-        title: newAdministrator.title,
-        image: newAdministrator.image,
-        bio: newAdministrator.bio,
-        message: newAdministrator.message, // Added message field
-        tenure: newAdministrator.tenure,
-        email: newAdministrator.email,
-        phone: newAdministrator.phone,
-        office: newAdministrator.office,
-        achievements: newAdministrator.achievements,
-      };
+      // Create new administrator
+      const [result] = await db.insert(schema.administrators).values({
+        name: validatedData.name,
+        title: validatedData.title,
+        image: validatedData.image,
+        bio: validatedData.bio,
+        message: validatedData.message,
+        tenure: validatedData.tenure,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        office: validatedData.office,
+        achievements: validatedData.achievements || [],
+      });
 
       return res.status(201).json({
         success: true,
         message: "Administrator created successfully",
-        data: responseData,
+        data: {
+          id: Number(result.insertId),
+          name: validatedData.name,
+          title: validatedData.title,
+          image: validatedData.image,
+          bio: validatedData.bio,
+          message: validatedData.message,
+          tenure: validatedData.tenure,
+          email: validatedData.email,
+          phone: validatedData.phone,
+          office: validatedData.office,
+          achievements: validatedData.achievements || [],
+        },
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        // console.log("ZOD ERRORS:", error.errors);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      // console.error("Create administrator error:", error);
+      console.error("Create administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -70,33 +72,33 @@ const administratorController = {
   // READ - Get all administrators
   getAdministrators: async (req, res) => {
     try {
-      const administrators = await Administrator.find()
-        .sort({ createdAt: -1 })
-        .select("-__v");
-
-      // Format response to match your desired structure
-      const formattedAdministrators = administrators.map((admin) => ({
-        id: admin._id,
-        name: admin.name,
-        title: admin.title,
-        image: admin.image,
-        bio: admin.bio,
-        message: admin.message, // Added message field
-        tenure: admin.tenure,
-        email: admin.email,
-        phone: admin.phone,
-        office: admin.office,
-        achievements: admin.achievements,
-      }));
+      const administrators = await db
+        .select({
+          id: schema.administrators.id,
+          name: schema.administrators.name,
+          title: schema.administrators.title,
+          image: schema.administrators.image,
+          bio: schema.administrators.bio,
+          message: schema.administrators.message,
+          tenure: schema.administrators.tenure,
+          email: schema.administrators.email,
+          phone: schema.administrators.phone,
+          office: schema.administrators.office,
+          achievements: schema.administrators.achievements,
+          createdAt: schema.administrators.createdAt,
+          updatedAt: schema.administrators.updatedAt,
+        })
+        .from(schema.administrators)
+        .orderBy(schema.administrators.createdAt);
 
       return res.status(200).json({
         success: true,
         message: "Administrators retrieved successfully",
-        data: formattedAdministrators,
-        count: formattedAdministrators.length,
+        data: administrators,
+        count: administrators.length,
       });
     } catch (error) {
-      // console.error("Get administrators error:", error);
+      console.error("Get administrators error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -108,10 +110,33 @@ const administratorController = {
   getAdministrator: async (req, res) => {
     try {
       const validatedParams = administratorSchema.byId.parse(req.params);
+      const id = parseInt(validatedParams.id);
 
-      const administrator = await Administrator.findById(
-        validatedParams.id
-      ).select("-__v");
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid administrator ID",
+        });
+      }
+
+      const [administrator] = await db
+        .select({
+          id: schema.administrators.id,
+          name: schema.administrators.name,
+          title: schema.administrators.title,
+          image: schema.administrators.image,
+          bio: schema.administrators.bio,
+          message: schema.administrators.message,
+          tenure: schema.administrators.tenure,
+          email: schema.administrators.email,
+          phone: schema.administrators.phone,
+          office: schema.administrators.office,
+          achievements: schema.administrators.achievements,
+          createdAt: schema.administrators.createdAt,
+          updatedAt: schema.administrators.updatedAt,
+        })
+        .from(schema.administrators)
+        .where(eq(schema.administrators.id, id));
 
       if (!administrator) {
         return res.status(404).json({
@@ -120,25 +145,10 @@ const administratorController = {
         });
       }
 
-      // Format response to match your desired structure
-      const responseData = {
-        id: administrator._id,
-        name: administrator.name,
-        title: administrator.title,
-        image: administrator.image,
-        bio: administrator.bio,
-        message: administrator.message, // Added message field
-        tenure: administrator.tenure,
-        email: administrator.email,
-        phone: administrator.phone,
-        office: administrator.office,
-        achievements: administrator.achievements,
-      };
-
       return res.status(200).json({
         success: true,
         message: "Administrator retrieved successfully",
-        data: responseData,
+        data: administrator,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -148,7 +158,7 @@ const administratorController = {
           errors: error.errors,
         });
       }
-      // console.error("Get administrator error:", error);
+      console.error("Get administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -161,13 +171,28 @@ const administratorController = {
     try {
       const validatedParams = administratorSchema.byId.parse(req.params);
       const validatedData = administratorSchema.update.parse(req.body);
+      const id = parseInt(validatedParams.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid administrator ID",
+        });
+      }
 
       // Check if email is being updated and if it's already in use
       if (validatedData.email) {
-        const existingAdmin = await Administrator.findOne({
-          email: validatedData.email,
-          _id: { $ne: validatedParams.id },
-        });
+        const [existingAdmin] = await db
+          .select()
+          .from(schema.administrators)
+          .where(
+            and(
+              eq(schema.administrators.email, validatedData.email),
+              not(eq(schema.administrators.id, id))
+            )
+          )
+          .limit(1);
+
         if (existingAdmin) {
           return res.status(400).json({
             success: false,
@@ -177,22 +202,41 @@ const administratorController = {
       }
 
       // Prepare update object
-      const updateData = { ...validatedData };
+      const updateData = {
+        ...validatedData,
+        updatedAt: new Date(),
+      };
 
-      // If achievements are provided in the update, replace the entire array
+      // If achievements are provided in the update, use them
       if (req.body.achievements !== undefined) {
         updateData.achievements = validatedData.achievements || [];
       }
 
-      const updatedAdministrator = await Administrator.findByIdAndUpdate(
-        validatedParams.id,
-        { $set: updateData },
-        {
-          new: true,
-          runValidators: true,
-          select: "-__v",
-        }
-      );
+      // Update administrator
+      await db
+        .update(schema.administrators)
+        .set(updateData)
+        .where(eq(schema.administrators.id, id));
+
+      // Get updated administrator
+      const [updatedAdministrator] = await db
+        .select({
+          id: schema.administrators.id,
+          name: schema.administrators.name,
+          title: schema.administrators.title,
+          image: schema.administrators.image,
+          bio: schema.administrators.bio,
+          message: schema.administrators.message,
+          tenure: schema.administrators.tenure,
+          email: schema.administrators.email,
+          phone: schema.administrators.phone,
+          office: schema.administrators.office,
+          achievements: schema.administrators.achievements,
+          createdAt: schema.administrators.createdAt,
+          updatedAt: schema.administrators.updatedAt,
+        })
+        .from(schema.administrators)
+        .where(eq(schema.administrators.id, id));
 
       if (!updatedAdministrator) {
         return res.status(404).json({
@@ -201,25 +245,10 @@ const administratorController = {
         });
       }
 
-      // Format response to match your desired structure
-      const responseData = {
-        id: updatedAdministrator._id,
-        name: updatedAdministrator.name,
-        title: updatedAdministrator.title,
-        image: updatedAdministrator.image,
-        bio: updatedAdministrator.bio,
-        message: updatedAdministrator.message, // Added message field
-        tenure: updatedAdministrator.tenure,
-        email: updatedAdministrator.email,
-        phone: updatedAdministrator.phone,
-        office: updatedAdministrator.office,
-        achievements: updatedAdministrator.achievements,
-      };
-
       return res.status(200).json({
         success: true,
         message: "Administrator updated successfully",
-        data: responseData,
+        data: updatedAdministrator,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -229,7 +258,7 @@ const administratorController = {
           errors: error.errors,
         });
       }
-      // console.error("Update administrator error:", error);
+      console.error("Update administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -241,8 +270,21 @@ const administratorController = {
   deleteAdministrator: async (req, res) => {
     try {
       const validatedParams = administratorSchema.byId.parse(req.params);
+      const id = parseInt(validatedParams.id);
 
-      const administrator = await Administrator.findById(validatedParams.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid administrator ID",
+        });
+      }
+
+      // Check if administrator exists
+      const [administrator] = await db
+        .select()
+        .from(schema.administrators)
+        .where(eq(schema.administrators.id, id));
+
       if (!administrator) {
         return res.status(404).json({
           success: false,
@@ -250,7 +292,10 @@ const administratorController = {
         });
       }
 
-      await Administrator.findByIdAndDelete(validatedParams.id);
+      // Delete administrator
+      await db
+        .delete(schema.administrators)
+        .where(eq(schema.administrators.id, id));
 
       return res.status(200).json({
         success: true,
@@ -264,7 +309,7 @@ const administratorController = {
           errors: error.errors,
         });
       }
-      // console.error("Delete administrator error:", error);
+      console.error("Delete administrator error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -272,7 +317,7 @@ const administratorController = {
     }
   },
 
-  // SEARCH - Search administrators by name or title
+  // SEARCH - Search administrators by name, title, or email
   searchAdministrators: async (req, res) => {
     try {
       const { query } = req.query;
@@ -284,40 +329,40 @@ const administratorController = {
         });
       }
 
-      const searchRegex = new RegExp(query, "i");
+      const searchTerm = `%${query}%`;
 
-      const administrators = await Administrator.find({
-        $or: [
-          { name: searchRegex },
-          { title: searchRegex },
-          { email: searchRegex },
-        ],
-      })
-        .sort({ createdAt: -1 })
-        .select("-__v");
-
-      // Format response to match your desired structure
-      const formattedAdministrators = administrators.map((admin) => ({
-        name: admin.name,
-        title: admin.title,
-        image: admin.image,
-        bio: admin.bio,
-        message: admin.message, // Added message field
-        tenure: admin.tenure,
-        email: admin.email,
-        phone: admin.phone,
-        office: admin.office,
-        achievements: admin.achievements,
-      }));
+      const administrators = await db
+        .select({
+          id: schema.administrators.id,
+          name: schema.administrators.name,
+          title: schema.administrators.title,
+          image: schema.administrators.image,
+          bio: schema.administrators.bio,
+          message: schema.administrators.message,
+          tenure: schema.administrators.tenure,
+          email: schema.administrators.email,
+          phone: schema.administrators.phone,
+          office: schema.administrators.office,
+          achievements: schema.administrators.achievements,
+          createdAt: schema.administrators.createdAt,
+          updatedAt: schema.administrators.updatedAt,
+        })
+        .from(schema.administrators)
+        .where(
+          like(schema.administrators.name, searchTerm) ||
+            like(schema.administrators.title, searchTerm) ||
+            like(schema.administrators.email, searchTerm)
+        )
+        .orderBy(schema.administrators.createdAt);
 
       return res.status(200).json({
         success: true,
         message: "Search completed successfully",
-        data: formattedAdministrators,
-        count: formattedAdministrators.length,
+        data: administrators,
+        count: administrators.length,
       });
     } catch (error) {
-      // console.error("Search administrators error:", error);
+      console.error("Search administrators error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",

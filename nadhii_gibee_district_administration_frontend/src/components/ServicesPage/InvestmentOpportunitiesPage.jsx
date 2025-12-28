@@ -25,7 +25,6 @@ import {
   BarChart3,
   Target,
   Navigation,
-  DollarSign,
   Zap,
 } from "lucide-react";
 import backgroundImage from "../../assets/investment_hero.png";
@@ -518,8 +517,7 @@ const InvestmentOpportunitiesPage = () => {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                           <div className="flex items-center text-sm text-gray-500 mb-1">
-                            <DollarSign size={14} className="mr-1" />
-                            Investment Range
+                            ETB Investment Range
                           </div>
                           <div className="font-medium text-gray-900">
                             {opportunity.investmentRange}

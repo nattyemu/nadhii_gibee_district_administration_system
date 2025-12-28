@@ -51,7 +51,7 @@ export const sendEmail = async (user_email, v_code) => {
               This code will expire shortly. If you did not request this password reset, you can safely ignore this email.
             </p>
             <p style="text-align:center; color:#999; font-size:13px; margin-top:30px;">
-              © ${new Date().getFullYear()} Jimma Zone Administration. All rights reserved.
+              © ${new Date().getFullYear()} Nadhii Gibee District Administration. All rights reserved.
             </p>
           </div>
         </div>

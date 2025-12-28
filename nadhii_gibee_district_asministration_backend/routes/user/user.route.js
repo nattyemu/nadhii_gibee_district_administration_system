@@ -1,6 +1,5 @@
 import { Router } from "express";
 import usersController from "./user.controller.js";
-import authenticate from "../../middleware/authenticate.js";
 import rateLimiters from "../../middleware/rateLimiters.js";
 const usersRouter = Router();
 usersRouter.post("/register", rateLimiters, usersController.register);

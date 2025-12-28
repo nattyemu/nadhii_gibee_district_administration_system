@@ -60,7 +60,14 @@ const AdminCabinets = () => {
       setLoading(false);
     }
   };
-
+  const capitalizeWords = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   const filteredCabinets = cabinets.filter(
     (cabinet) =>
       cabinet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -226,7 +233,7 @@ const AdminCabinets = () => {
                       {cabinet.position}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-yellow-500 drop-shadow-md">
+                  <h3 className="text-lg font-semibold text-white bg-[#21203C]/60 rounded-full px-4 py-1 shadow-lg">
                     {cabinet.title}
                   </h3>
                 </div>
@@ -260,7 +267,7 @@ const AdminCabinets = () => {
               {/* Cabinet Info */}
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                  {cabinet.name}
+                  {capitalizeWords(cabinet.name)}
                 </h3>
 
                 <div className="space-y-3 mb-6">

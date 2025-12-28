@@ -56,7 +56,14 @@ const AdminKebeles = () => {
     const matchesType = filterType === "all" || kebele.type === filterType;
     return matchesSearch && matchesType;
   });
-
+  const capitalizeWords = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   const handleAddKebele = () => {
     setKebeleToEdit(null);
     setIsEditing(false);
@@ -249,7 +256,7 @@ const AdminKebeles = () => {
             {/* Kebele Content */}
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                {kebele.name}
+                {capitalizeWords(kebele.name)}
               </h3>
 
               <p className="text-gray-600 text-sm mb-4 line-clamp-2">

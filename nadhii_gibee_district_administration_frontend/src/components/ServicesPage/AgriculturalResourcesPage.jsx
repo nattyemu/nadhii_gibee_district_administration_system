@@ -699,7 +699,7 @@ const AgriculturalResourcesPage = () => {
 
                       <button
                         onClick={() => setSelectedResource(resource)}
-                        className="w-full bg-[#21203C] hover:bg-[#2D2B4A] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center group-hover:scale-105 transition-transform"
+                        className="w-full bg-[#21203C] hover:bg-[#2D2B4A] text-white font-medium py-2 px-4 rounded-lg duration-300 flex items-center justify-center group-hover:scale-105 transition-transform"
                       >
                         Access Resource
                         <ArrowRight size={16} className="ml-2" />

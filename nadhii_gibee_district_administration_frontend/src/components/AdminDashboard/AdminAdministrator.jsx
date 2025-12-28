@@ -84,7 +84,14 @@ const AdminAdministrator = () => {
       setShowDeleteModal(false);
     }
   };
-
+  const capitalizeWords = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   const handleSave = async (formData, imageFile = null, oldImageUrl = null) => {
     try {
       let response;
@@ -197,7 +204,9 @@ const AdminAdministrator = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
-                  <h2 className="text-xl font-bold">{administrator.name}</h2>
+                  <h2 className="text-xl font-bold">
+                    {capitalizeWords(administrator.name)}
+                  </h2>
                   <p className="text-blue-200">{administrator.title}</p>
                 </div>
               </div>

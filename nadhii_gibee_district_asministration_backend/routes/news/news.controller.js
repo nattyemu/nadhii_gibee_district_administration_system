@@ -1,38 +1,72 @@
-import { NewsArticle } from "../../models/NewsArticle.model.js";
 import newsSchema from "./news.schema.js";
+import { db, schema } from "../../config/db.js";
+import { eq, and, or, like, ne, desc } from "drizzle-orm";
+
 const transformArticleData = (article) => {
-  const articleData = article.toObject ? article.toObject() : article;
   return {
-    id: articleData._id,
-    title: articleData.title,
-    excerpt: articleData.excerpt,
-    content: articleData.content,
-    type: articleData.type,
-    category: articleData.category,
-    image: articleData.image,
-    date: articleData.date,
-    author: articleData.author,
-    location: articleData.location,
-    tags: articleData.tags,
-    featured: articleData.featured,
-    urgent: articleData.urgent,
-    createdAt: articleData.createdAt,
-    updatedAt: articleData.updatedAt,
+    id: article.id,
+    title: article.title,
+    excerpt: article.excerpt,
+    content: article.content,
+    type: article.type,
+    category: article.category,
+    image: article.image,
+    date: article.date,
+    author: article.author,
+    location: article.location,
+    tags: article.tags,
+    featured: article.featured,
+    urgent: article.urgent,
+    createdAt: article.createdAt,
+    updatedAt: article.updatedAt,
   };
 };
+
 const newsArticleController = {
   // CREATE - Create new news article
   createArticle: async (req, res) => {
     try {
+      // console.log("Creating article with data:", req.body);
       const validatedData = newsSchema.create.parse(req.body);
 
-      // Convert date string to Date object if needed
-      if (typeof validatedData.date === "string") {
-        validatedData.date = new Date(validatedData.date);
+      // Ensure date is a valid Date object
+      let articleDate = validatedData.date;
+      if (typeof articleDate === "string") {
+        articleDate = new Date(articleDate);
+        if (isNaN(articleDate.getTime())) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid date format",
+          });
+        }
       }
 
-      const newArticle = new NewsArticle(validatedData);
-      await newArticle.save();
+      const articleData = {
+        title: validatedData.title,
+        excerpt: validatedData.excerpt,
+        content: validatedData.content || null,
+        type: validatedData.type,
+        category: validatedData.category,
+        image: validatedData.image,
+        date: articleDate,
+        author: validatedData.author || null,
+        location: validatedData.location || null,
+        tags: validatedData.tags || [],
+        featured: validatedData.featured || false,
+        urgent: validatedData.urgent || false,
+      };
+
+      // console.log("Article data to insert:", articleData);
+
+      const [result] = await db.insert(schema.newsArticles).values(articleData);
+      // console.log("Insert result:", result);
+
+      const [newArticle] = await db
+        .select()
+        .from(schema.newsArticles)
+        .where(eq(schema.newsArticles.id, Number(result.insertId)));
+
+      // console.log("New article created:", newArticle);
 
       return res.status(201).json({
         success: true,
@@ -40,18 +74,19 @@ const newsArticleController = {
         data: transformArticleData(newArticle),
       });
     } catch (error) {
+      console.error("Create article error details:", error);
       if (error.name === "ZodError") {
-        // console.log(error);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      // console.error("Create article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
       });
     }
   },
@@ -61,26 +96,50 @@ const newsArticleController = {
     try {
       const validatedQuery = newsSchema.query.parse(req.query);
 
-      // Build filter object
-      const filter = {};
+      // Start building query
+      let query = db.select().from(schema.newsArticles);
 
-      if (validatedQuery.type) filter.type = validatedQuery.type;
-      if (validatedQuery.category) filter.category = validatedQuery.category;
-      if (validatedQuery.featured)
-        filter.featured = validatedQuery.featured === "true";
-      if (validatedQuery.urgent)
-        filter.urgent = validatedQuery.urgent === "true";
-
-      // Text search
+      // Apply filters
+      const conditions = [];
+      if (validatedQuery.type) {
+        conditions.push(eq(schema.newsArticles.type, validatedQuery.type));
+      }
+      if (validatedQuery.category) {
+        conditions.push(
+          eq(schema.newsArticles.category, validatedQuery.category)
+        );
+      }
+      if (validatedQuery.featured !== undefined) {
+        conditions.push(
+          eq(schema.newsArticles.featured, validatedQuery.featured === "true")
+        );
+      }
+      if (validatedQuery.urgent !== undefined) {
+        conditions.push(
+          eq(schema.newsArticles.urgent, validatedQuery.urgent === "true")
+        );
+      }
       if (validatedQuery.search) {
-        filter.$text = { $search: validatedQuery.search };
+        conditions.push(
+          or(
+            like(schema.newsArticles.title, `%${validatedQuery.search}%`),
+            like(schema.newsArticles.excerpt, `%${validatedQuery.search}%`),
+            like(schema.newsArticles.content, `%${validatedQuery.search}%`)
+          )
+        );
       }
 
-      const articles = await NewsArticle.find(filter)
-        .sort({ date: -1, createdAt: -1 })
-        .select("-__v");
+      // Apply conditions if any
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
 
-      // Transform all articles using the helper function
+      // Sort by date descending, then createdAt descending
+      const articles = await query.orderBy(
+        desc(schema.newsArticles.date),
+        desc(schema.newsArticles.createdAt)
+      );
+
       const transformedArticles = articles.map((article) =>
         transformArticleData(article)
       );
@@ -91,6 +150,7 @@ const newsArticleController = {
         data: transformedArticles,
       });
     } catch (error) {
+      console.error("Get articles error:", error);
       if (error.name === "ZodError") {
         return res.status(400).json({
           success: false,
@@ -98,7 +158,6 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      // console.error("Get articles error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -110,10 +169,19 @@ const newsArticleController = {
   getArticle: async (req, res) => {
     try {
       const validatedParams = newsSchema.byId.parse(req.params);
+      const id = parseInt(validatedParams.id);
 
-      const article = await NewsArticle.findById(validatedParams.id).select(
-        "-__v"
-      );
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid article ID",
+        });
+      }
+
+      const [article] = await db
+        .select()
+        .from(schema.newsArticles)
+        .where(eq(schema.newsArticles.id, id));
 
       if (!article) {
         return res.status(404).json({
@@ -128,6 +196,7 @@ const newsArticleController = {
         data: transformArticleData(article),
       });
     } catch (error) {
+      console.error("Get article error:", error);
       if (error.name === "ZodError") {
         return res.status(400).json({
           success: false,
@@ -135,22 +204,21 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      // console.error("Get article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
       });
     }
   },
+
   // READ - Get recently updated articles
   getUpdatedArticles: async (req, res) => {
     try {
-      // Find all articles that have been updated (updatedAt != createdAt)
-      const updatedArticles = await NewsArticle.find({
-        $expr: { $ne: ["$createdAt", "$updatedAt"] },
-      })
-        .sort({ updatedAt: -1 })
-        .select("-__v");
+      const updatedArticles = await db
+        .select()
+        .from(schema.newsArticles)
+        .where(ne(schema.newsArticles.createdAt, schema.newsArticles.updatedAt))
+        .orderBy(desc(schema.newsArticles.updatedAt));
 
       if (!updatedArticles.length) {
         return res.status(200).json({
@@ -170,7 +238,7 @@ const newsArticleController = {
         data: transformed,
       });
     } catch (error) {
-      // console.error("Get updated articles error:", error);
+      console.error("Get updated articles error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -183,30 +251,45 @@ const newsArticleController = {
     try {
       const validatedParams = newsSchema.byId.parse(req.params);
       const validatedData = newsSchema.update.parse(req.body);
+      const id = parseInt(validatedParams.id);
 
-      // Convert date string to Date object if needed
-      if (validatedData.date && typeof validatedData.date === "string") {
-        validatedData.date = new Date(validatedData.date);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid article ID",
+        });
       }
 
       // Prepare update object
-      const updateData = { ...validatedData };
+      const updateData = {
+        ...validatedData,
+        updatedAt: new Date(),
+      };
 
-      // If tags are provided in the update, replace the entire array
-      // If tags are not provided, they will not be included in the update
+      // Handle date conversion if needed
+      if (validatedData.date && typeof validatedData.date === "string") {
+        const articleDate = new Date(validatedData.date);
+        if (!isNaN(articleDate.getTime())) {
+          updateData.date = articleDate;
+        }
+      }
+
+      // If tags are provided, use them
       if (req.body.tags !== undefined) {
         updateData.tags = validatedData.tags || [];
       }
 
-      const updatedArticle = await NewsArticle.findByIdAndUpdate(
-        validatedParams.id,
-        { $set: updateData },
-        {
-          new: true,
-          runValidators: true,
-          select: "-__v",
-        }
-      );
+      // Update article
+      await db
+        .update(schema.newsArticles)
+        .set(updateData)
+        .where(eq(schema.newsArticles.id, id));
+
+      // Get updated article
+      const [updatedArticle] = await db
+        .select()
+        .from(schema.newsArticles)
+        .where(eq(schema.newsArticles.id, id));
 
       if (!updatedArticle) {
         return res.status(404).json({
@@ -221,6 +304,7 @@ const newsArticleController = {
         data: transformArticleData(updatedArticle),
       });
     } catch (error) {
+      console.error("Update article error:", error);
       if (error.name === "ZodError") {
         return res.status(400).json({
           success: false,
@@ -228,7 +312,6 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      // console.error("Update article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -240,8 +323,21 @@ const newsArticleController = {
   deleteArticle: async (req, res) => {
     try {
       const validatedParams = newsSchema.byId.parse(req.params);
+      const id = parseInt(validatedParams.id);
 
-      const article = await NewsArticle.findById(validatedParams.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid article ID",
+        });
+      }
+
+      // Check if article exists
+      const [article] = await db
+        .select()
+        .from(schema.newsArticles)
+        .where(eq(schema.newsArticles.id, id));
+
       if (!article) {
         return res.status(404).json({
           success: false,
@@ -249,13 +345,17 @@ const newsArticleController = {
         });
       }
 
-      await NewsArticle.findByIdAndDelete(validatedParams.id);
+      // Delete article
+      await db
+        .delete(schema.newsArticles)
+        .where(eq(schema.newsArticles.id, id));
 
       return res.status(200).json({
         success: true,
         message: "Article deleted successfully",
       });
     } catch (error) {
+      console.error("Delete article error:", error);
       if (error.name === "ZodError") {
         return res.status(400).json({
           success: false,
@@ -263,7 +363,6 @@ const newsArticleController = {
           errors: error.errors,
         });
       }
-      // console.error("Delete article error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",

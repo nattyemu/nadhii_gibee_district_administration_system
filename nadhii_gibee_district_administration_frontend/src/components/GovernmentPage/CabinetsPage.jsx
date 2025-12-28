@@ -51,7 +51,14 @@ const CabinetsPage = () => {
     "bg-[#21203C]",
     "bg-[#2D2B4A]",
   ];
-
+  const capitalizeWords = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   const getIconForCabine = (title) => {
     const titleLower = title.toLowerCase();
     if (titleLower.includes("executive") || titleLower.includes("office"))
@@ -213,7 +220,7 @@ const CabinetsPage = () => {
                       </span>
                     </div>
                     {/* Title below position */}
-                    <h3 className="text-lg font-semibold text-yellow-500 drop-shadow-md">
+                    <h3 className="text-lg font-semibold text-white bg-[#21203C]/60 rounded-full px-4 py-1 shadow-lg">
                       {cabinet.title}
                     </h3>
                   </div>
@@ -232,6 +239,10 @@ const CabinetsPage = () => {
 
                 {/* Cabinet Info */}
                 <div className="p-6 text-center">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
+                    {capitalizeWords(cabinet.name)}
+                  </h3>
+
                   <div className="space-y-4 mb-6 text-left">
                     {cabinet.email && (
                       <div className="flex items-start">

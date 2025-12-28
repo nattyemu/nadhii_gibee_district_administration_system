@@ -1,26 +1,92 @@
-import { Kebele } from "../../models/kebele.model.js";
 import { createKebeleSchema, updateKebeleSchema } from "./kebele.schema.js";
+import { db, schema } from "../../config/db.js";
+import { eq } from "drizzle-orm";
 
 const transformKebele = (kebele) => {
-  const kebeleObj = kebele.toObject();
-  kebeleObj.id = kebeleObj._id.toString();
-  delete kebeleObj._id;
-  delete kebeleObj.__v;
-  return kebeleObj;
+  return {
+    id: kebele.id,
+    name: kebele.name,
+    type: kebele.type,
+    population: kebele.population,
+    area: kebele.area,
+    elevation: kebele.elevation,
+    image: kebele.image,
+    description: kebele.description,
+    features: kebele.features,
+    contact: {
+      administrator: kebele.contactAdministrator,
+      phone: kebele.contactPhone,
+      email: kebele.contactEmail,
+    },
+    status: {
+      schools: kebele.statusSchools,
+      healthCenters: kebele.statusHealthCenters,
+      roads: kebele.statusRoads,
+      developmentIndex: kebele.statusDevelopmentIndex,
+    },
+    createdAt: kebele.createdAt,
+    updatedAt: kebele.updatedAt,
+  };
+};
+
+// Helper to transform request data to database schema
+const transformToDbSchema = (data) => {
+  return {
+    name: data.name,
+    type: data.type,
+    population: data.population,
+    area: data.area,
+    elevation: data.elevation,
+    image: data.image,
+    description: data.description,
+    features: data.features,
+    contactAdministrator:
+      data.contact?.administrator || data.contactAdministrator,
+    contactPhone: data.contact?.phone || data.contactPhone,
+    contactEmail: data.contact?.email || data.contactEmail,
+    statusSchools: data.status?.schools || data.statusSchools,
+    statusHealthCenters: data.status?.healthCenters || data.statusHealthCenters,
+    statusRoads: data.status?.roads || data.statusRoads,
+    statusDevelopmentIndex:
+      data.status?.developmentIndex || data.statusDevelopmentIndex,
+  };
 };
 
 export const createKebele = async (req, res) => {
   try {
     const validatedData = createKebeleSchema.parse(req.body);
-    const kebele = new Kebele(validatedData);
-    await kebele.save();
+
+    // Check if kebele with same name exists
+    const [existingKebele] = await db
+      .select()
+      .from(schema.kebeles)
+      .where(eq(schema.kebeles.name, validatedData.name))
+      .limit(1);
+
+    if (existingKebele) {
+      return res.status(400).json({
+        success: false,
+        error: "Kebele with this name already exists",
+      });
+    }
+
+    // Transform to database schema format
+    const dbData = transformToDbSchema(validatedData);
+
+    const [result] = await db.insert(schema.kebeles).values(dbData);
+
+    const [newKebele] = await db
+      .select()
+      .from(schema.kebeles)
+      .where(eq(schema.kebeles.id, Number(result.insertId)));
 
     res.status(201).json({
       success: true,
-      data: transformKebele(kebele),
+      data: transformKebele(newKebele),
       message: "Kebele created successfully",
     });
   } catch (error) {
+    console.error("Create kebele error:", error);
     if (error.name === "ZodError") {
       return res.status(400).json({
         success: false,
@@ -32,7 +98,8 @@ export const createKebele = async (req, res) => {
       });
     }
 
-    if (error.code === 11000) {
+    // Check for duplicate entry error (MySQL error code 1062)
+    if (error.code === "ER_DUP_ENTRY" || error.errno === 1062) {
       return res.status(400).json({
         success: false,
         error: "Kebele with this name already exists",
@@ -49,7 +116,7 @@ export const createKebele = async (req, res) => {
 
 export const getKebeles = async (req, res) => {
   try {
-    const kebeles = await Kebele.find();
+    const kebeles = await db.select().from(schema.kebeles);
 
     res.json({
       success: true,
@@ -57,6 +124,7 @@ export const getKebeles = async (req, res) => {
       count: kebeles.length,
     });
   } catch (error) {
+    console.error("Get kebeles error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to fetch kebeles",
@@ -67,7 +135,20 @@ export const getKebeles = async (req, res) => {
 
 export const getKebele = async (req, res) => {
   try {
-    const kebele = await Kebele.findById(req.params.id);
+    const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid kebele ID",
+      });
+    }
+
+    const [kebele] = await db
+      .select()
+      .from(schema.kebeles)
+      .where(eq(schema.kebeles.id, id));
+
     if (!kebele) {
       return res.status(404).json({
         success: false,
@@ -80,13 +161,7 @@ export const getKebele = async (req, res) => {
       data: transformKebele(kebele),
     });
   } catch (error) {
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid kebele ID",
-      });
-    }
-
+    console.error("Get kebele error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to fetch kebele",
@@ -98,25 +173,51 @@ export const getKebele = async (req, res) => {
 export const updateKebele = async (req, res) => {
   try {
     const validatedData = updateKebeleSchema.parse(req.body);
-    const kebele = await Kebele.findByIdAndUpdate(
-      req.params.id,
-      validatedData,
-      { new: true, runValidators: true }
-    );
+    const id = parseInt(req.params.id);
 
-    if (!kebele) {
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid kebele ID",
+      });
+    }
+
+    // Check if kebele exists
+    const [existingKebele] = await db
+      .select()
+      .from(schema.kebeles)
+      .where(eq(schema.kebeles.id, id));
+
+    if (!existingKebele) {
       return res.status(404).json({
         success: false,
         error: "Kebele not found",
       });
     }
 
+    // Transform to database schema format
+    const dbData = transformToDbSchema(validatedData);
+    dbData.updatedAt = new Date();
+
+    // Update kebele
+    await db
+      .update(schema.kebeles)
+      .set(dbData)
+      .where(eq(schema.kebeles.id, id));
+
+    // Get updated kebele
+    const [updatedKebele] = await db
+      .select()
+      .from(schema.kebeles)
+      .where(eq(schema.kebeles.id, id));
+
     res.json({
       success: true,
-      data: transformKebele(kebele),
+      data: transformKebele(updatedKebele),
       message: "Kebele updated successfully",
     });
   } catch (error) {
+    console.error("Update kebele error:", error);
     if (error.name === "ZodError") {
       return res.status(400).json({
         success: false,
@@ -129,10 +230,11 @@ export const updateKebele = async (req, res) => {
       });
     }
 
-    if (error.name === "CastError") {
+    // Check for duplicate entry error (MySQL error code 1062)
+    if (error.code === "ER_DUP_ENTRY" || error.errno === 1062) {
       return res.status(400).json({
         success: false,
-        error: "Invalid kebele ID",
+        error: "Kebele with this name already exists",
       });
     }
 
@@ -146,7 +248,20 @@ export const updateKebele = async (req, res) => {
 
 export const deleteKebele = async (req, res) => {
   try {
-    const kebele = await Kebele.findByIdAndDelete(req.params.id);
+    const id = parseInt(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid kebele ID",
+      });
+    }
+
+    // Check if kebele exists
+    const [kebele] = await db
+      .select()
+      .from(schema.kebeles)
+      .where(eq(schema.kebeles.id, id));
 
     if (!kebele) {
       return res.status(404).json({
@@ -155,19 +270,16 @@ export const deleteKebele = async (req, res) => {
       });
     }
 
+    // Delete kebele
+    await db.delete(schema.kebeles).where(eq(schema.kebeles.id, id));
+
     res.json({
       success: true,
       message: "Kebele deleted successfully",
-      data: { id: kebele._id.toString() },
+      data: { id: id },
     });
   } catch (error) {
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid kebele ID",
-      });
-    }
-
+    console.error("Delete kebele error:", error);
     res.status(500).json({
       success: false,
       error: "Failed to delete kebele",

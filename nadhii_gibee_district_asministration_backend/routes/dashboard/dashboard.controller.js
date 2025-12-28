@@ -1,26 +1,30 @@
 // controllers/dashboardController.js
-import Administrator from "../../models/administrator.model.js";
-import { NewsArticle } from "../../models/NewsArticle.model.js";
-import { Kebele } from "../../models/kebele.model.js";
-import { Sector } from "../../models/sector.model.js";
-import { Cabine } from "../../models/Cabine.model.js";
+import { db, schema } from "../../config/db.js";
+import { sql } from "drizzle-orm";
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // Get counts from all collections in parallel
+    // Get counts from all tables in parallel
     const [
-      administratorsCount,
-      newsCount,
-      kebelesCount,
-      sectorsCount,
-      cabinetsCount,
+      administratorsResult,
+      newsResult,
+      kebelesResult,
+      sectorsResult,
+      cabinetsResult,
     ] = await Promise.all([
-      Administrator.countDocuments(),
-      NewsArticle.countDocuments(),
-      Kebele.countDocuments(),
-      Sector.countDocuments(),
-      Cabine.countDocuments(),
+      db.select({ count: sql`COUNT(*)` }).from(schema.administrators),
+      db.select({ count: sql`COUNT(*)` }).from(schema.newsArticles),
+      db.select({ count: sql`COUNT(*)` }).from(schema.kebeles),
+      db.select({ count: sql`COUNT(*)` }).from(schema.sectors),
+      db.select({ count: sql`COUNT(*)` }).from(schema.cabines),
     ]);
+
+    // Extract counts from results
+    const administratorsCount = Number(administratorsResult[0]?.count || 0);
+    const newsCount = Number(newsResult[0]?.count || 0);
+    const kebelesCount = Number(kebelesResult[0]?.count || 0);
+    const sectorsCount = Number(sectorsResult[0]?.count || 0);
+    const cabinetsCount = Number(cabinetsResult[0]?.count || 0);
 
     res.json({
       success: true,
@@ -35,7 +39,6 @@ export const getDashboardStats = async (req, res) => {
       },
     });
   } catch (error) {
-    // console.error("Dashboard stats error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch dashboard statistics",

@@ -94,7 +94,14 @@ const OfficesPage = () => {
       setLoading(false);
     }
   };
-
+  const capitalizeWords = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   // Helper function to generate serving text based on category and status
   const getServingText = (category, status) => {
     switch (category) {
@@ -323,7 +330,7 @@ const OfficesPage = () => {
 
                   <div className="p-5">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {office.name}
+                      {capitalizeWords(office.name)}
                     </h3>
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {office.description}
@@ -389,7 +396,7 @@ const OfficesPage = () => {
                     {selectedOffice.category.toUpperCase()}
                   </span>
                   <h2 className="text-2xl font-bold text-gray-900 mt-2">
-                    {selectedOffice.name}
+                    {capitalizeWords(selectedOffice.name)}
                   </h2>
                   <p className="text-gray-600">{selectedOffice.description}</p>
                 </div>

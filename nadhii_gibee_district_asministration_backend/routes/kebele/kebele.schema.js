@@ -16,7 +16,6 @@ export const createKebeleSchema = z.object({
       administrator: z.string().optional(),
       phone: z.string().optional(),
       email: z
-        .string()
         .email({ message: "Invalid email format" })
         .optional()
         .or(z.literal("")),

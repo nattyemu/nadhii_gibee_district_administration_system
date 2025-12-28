@@ -25,7 +25,7 @@ const InvestmentOpportunities = () => {
       title: "Coffee Processing & Export",
       description:
         "Modern coffee washing stations, roasting facilities, and export operations leveraging our premium Arabica coffee",
-      investment: "$500K - $5M",
+      investment: "ETB500K - ETB5M",
       roi: "25-40%",
       timeline: "2-3 years",
       priority: "High",
@@ -35,7 +35,7 @@ const InvestmentOpportunities = () => {
       title: "Agro-Processing Industries",
       description:
         "Fruit processing, spice packaging, honey processing, and edible oil production using local agricultural products",
-      investment: "$1M - $10M",
+      investment: "ETB1M - ETB10M",
       roi: "20-35%",
       timeline: "3-4 years",
       priority: "High",
@@ -45,7 +45,7 @@ const InvestmentOpportunities = () => {
       title: "Commercial Real Estate",
       description:
         "Shopping malls, office complexes, and modern retail centers to serve our growing urban population",
-      investment: "$2M - $20M",
+      investment: "ETB2M - ETB20M",
       roi: "15-25%",
       timeline: "3-5 years",
       priority: "Medium",
@@ -55,7 +55,7 @@ const InvestmentOpportunities = () => {
       title: "Transport & Logistics",
       description:
         "Freight services, vehicle assembly, and logistics hubs connecting southwestern Ethiopia",
-      investment: "$1.5M - $15M",
+      investment: "ETB1.5M - ETB15M",
       roi: "18-30%",
       timeline: "2-4 years",
       priority: "Medium",
@@ -65,7 +65,7 @@ const InvestmentOpportunities = () => {
       title: "Hospitality & Tourism",
       description:
         "Hotels, eco-lodges, resorts, and conference facilities to accommodate growing tourism",
-      investment: "$3M - $25M",
+      investment: "ETB3M - ETB25M",
       roi: "20-35%",
       timeline: "4-6 years",
       priority: "High",
@@ -75,7 +75,7 @@ const InvestmentOpportunities = () => {
       title: "Renewable Energy",
       description:
         "Solar farms, mini-hydro plants, and biomass energy utilizing our natural resources",
-      investment: "$5M - $50M",
+      investment: "ETB5M - ETB50M",
       roi: "15-22%",
       timeline: "4-7 years",
       priority: "Medium",
@@ -178,7 +178,7 @@ const InvestmentOpportunities = () => {
               <div className="text-gray-600 text-sm">Active Investors</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-md border border-gray-100">
-              <div className="text-2xl font-bold text-[#21203C]">$200M+</div>
+              <div className="text-2xl font-bold text-[#21203C]">ETB200M+</div>
               <div className="text-gray-600 text-sm">Investment Pipeline</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-md border border-gray-100">
@@ -294,10 +294,16 @@ const InvestmentOpportunities = () => {
                   const Icon = incentive.icon;
                   return (
                     <div key={index} className="flex items-start">
-                      <Icon
-                        className="text-yellow-400 mt-1 mr-4 flex-shrink-0"
-                        size={20}
-                      />
+                      {Icon == DollarSign ? (
+                        <span className="text-yellow-400 mt-1 mr-4 flex-shrink-0 font-bold">
+                          ETB
+                        </span>
+                      ) : (
+                        <Icon
+                          className="text-yellow-400 mt-1 mr-4 flex-shrink-0"
+                          size={20}
+                        />
+                      )}
                       <div>
                         <h5 className="font-bold text-lg mb-1">
                           {incentive.title}

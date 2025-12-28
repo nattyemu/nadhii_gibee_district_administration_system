@@ -6,7 +6,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import compression from "compression";
 import appRouter from "./routes/index.js";
-import connectDB from "./config/db.js";
+import { connectDB } from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
 

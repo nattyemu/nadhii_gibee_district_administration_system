@@ -122,7 +122,14 @@ const AdministratorPage = () => {
       setLoading(false);
     }
   };
-
+  const capitalizeWords = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   const formatDate = (dateString) => {
     const options = { day: "numeric", month: "long", year: "numeric" };
     return new Date(dateString).toLocaleDateString("en-US", options);
@@ -208,7 +215,9 @@ const AdministratorPage = () => {
                     className="w-full h-70 object-cover rounded-xl"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-white rounded-b-xl">
-                    <h2 className="text-xl font-bold">{administrator.name}</h2>
+                    <h2 className="text-xl font-bold">
+                      {capitalizeWords(administrator.name)}
+                    </h2>
                     <p className="text-[#E5E4FF]">{administrator.title}</p>
                   </div>
                 </div>
@@ -363,7 +372,9 @@ const AdministratorPage = () => {
                     className="w-12 h-12 rounded-full mr-4"
                   />
                   <div>
-                    <p className="font-bold">{administrator.name}</p>
+                    <p className="font-bold">
+                      {capitalizeWords(administrator.name)}
+                    </p>
                     <p className="text-[#E5E4FF]">{administrator.title}</p>
                   </div>
                 </div>

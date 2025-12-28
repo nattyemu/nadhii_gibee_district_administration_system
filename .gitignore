@@ -85,6 +85,9 @@ nadhii_gibee_district_asministration_backend/build
 nadhii_gibee_district_asministration_backend/uploads
 nadhii_gibee_district_asministration_backend/tmp
 nadhii_gibee_district_asministration_backend/debug.log
+nadhii_gibee_district_asministration_backend/drizzle/migrations/*
+!nadhii_gibee_district_asministration_backend/drizzle/migrations/.gitkeep
+
 
 # PM2 logs or other runtime logs
 nadhii_gibee_district_asministration_backend/pids

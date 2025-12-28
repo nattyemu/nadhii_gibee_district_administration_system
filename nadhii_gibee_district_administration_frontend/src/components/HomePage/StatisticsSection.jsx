@@ -29,7 +29,7 @@ const StatisticsSection = () => {
     },
     {
       icon: MapPin,
-      endValue: 21,
+      endValue: 25,
       title: "Kebeles",
       prefix: "",
       suffix: "",

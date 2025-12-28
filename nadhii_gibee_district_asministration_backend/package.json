@@ -1,10 +1,18 @@
 {
-  "name": "jimma_zone_asministration_backend",
+  "name": "geeraa_gistrict_asministration_backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "dev": "nodemon app.js",
+    "start": "node app.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:migrate:prod": "node drizzle/migrate.js",
+    "db:studio": "drizzle-kit studio",
+    "db:push": "drizzle-kit push",
+    "db:check": "drizzle-kit check",
+    "db:drop": "drizzle-kit drop",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,20 +24,22 @@
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.0",
     "express": "^4.18.2",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.19.1",
     "multer": "^2.0.2",
+    "mysql2": "^3.15.3",
     "nodemailer": "^7.0.9",
     "url": "^0.11.4",
     "xss-clean": "^0.1.4",
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.8",
     "nodemon": "^3.1.10"
   }
 }

@@ -1,8 +1,10 @@
+// controllers/usersController.js
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import userSchema from "./user.schema.js";
-import User from "../../models/User.model.js";
+import { db, schema } from "../../config/db.js";
+import { eq } from "drizzle-orm";
 import generateOTP from "../../utils/generateor.js";
 import { sendEmail } from "../../utils/emailSender.js";
 
@@ -12,7 +14,13 @@ const usersController = {
     try {
       const validatedData = userSchema.register.parse(req.body);
 
-      const existingUser = await User.findOne({ email: validatedData.email });
+      // Check if user exists
+      const [existingUser] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, validatedData.email))
+        .limit(1);
+
       if (existingUser) {
         return res.status(400).json({
           success: false,
@@ -20,10 +28,12 @@ const usersController = {
         });
       }
 
+      // Hash password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(validatedData.password, salt);
 
-      const newUser = new User({
+      // Create new user
+      const [result] = await db.insert(schema.users).values({
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         email: validatedData.email,
@@ -31,29 +41,26 @@ const usersController = {
         role: validatedData.role || "user",
       });
 
-      await newUser.save();
-
       return res.status(201).json({
         success: true,
         message: "User registered successfully",
         data: {
-          id: newUser._id,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          email: newUser.email,
-          role: newUser.role,
+          id: Number(result.insertId),
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          email: validatedData.email,
+          role: validatedData.role || "user",
         },
       });
     } catch (error) {
       if (error.name === "ZodError") {
-        // console.log(error.errors);
         return res.status(400).json({
           success: false,
           message: "Validation error",
           errors: error.errors,
         });
       }
-      // console.error("Registration error:", error);
+      console.error("Registration error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -64,21 +71,25 @@ const usersController = {
   // READ - Get all users
   getUsers: async (req, res) => {
     try {
-      const users = await User.find()
-        .select("firstName lastName email role createdAt updatedAt")
-        .lean();
-      const transformedUsers = users.map((user) => {
-        const { _id, ...rest } = user;
-        return { id: _id, ...rest };
-      });
+      const users = await db
+        .select({
+          id: schema.users.id,
+          firstName: schema.users.firstName,
+          lastName: schema.users.lastName,
+          email: schema.users.email,
+          role: schema.users.role,
+          createdAt: schema.users.createdAt,
+          updatedAt: schema.users.updatedAt,
+        })
+        .from(schema.users);
 
       return res.status(200).json({
         success: true,
         message: "Users retrieved successfully",
-        data: transformedUsers,
+        data: users,
       });
     } catch (error) {
-      // console.error("Get users error:", error);
+      console.error("Get users error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -91,9 +102,18 @@ const usersController = {
     try {
       const { userId } = req.params;
 
-      const user = await User.findById(userId)
-        .select("firstName lastName email role createdAt updatedAt")
-        .lean();
+      const [user] = await db
+        .select({
+          id: schema.users.id,
+          firstName: schema.users.firstName,
+          lastName: schema.users.lastName,
+          email: schema.users.email,
+          role: schema.users.role,
+          createdAt: schema.users.createdAt,
+          updatedAt: schema.users.updatedAt,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.id, parseInt(userId)));
 
       if (!user) {
         return res.status(404).json({
@@ -101,15 +121,14 @@ const usersController = {
           message: "User not found",
         });
       }
-      const { _id, ...rest } = user;
-      const transformedUser = { id: _id, ...rest };
+
       return res.status(200).json({
         success: true,
         message: "User retrieved successfully",
-        data: transformedUser,
+        data: user,
       });
     } catch (error) {
-      // console.error("Get user error:", error);
+      console.error("Get user error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -127,14 +146,28 @@ const usersController = {
 
       const { password, ...updateData } = validatedData;
 
-      const updatedUser = await User.findByIdAndUpdate(
-        validatedData.userId,
-        { $set: updateData },
-        {
-          new: true,
-          select: "firstName lastName email role createdAt updatedAt",
-        }
-      ).lean();
+      // Update user
+      await db
+        .update(schema.users)
+        .set({
+          ...updateData,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.users.id, parseInt(validatedData.userId)));
+
+      // Get updated user
+      const [updatedUser] = await db
+        .select({
+          id: schema.users.id,
+          firstName: schema.users.firstName,
+          lastName: schema.users.lastName,
+          email: schema.users.email,
+          role: schema.users.role,
+          createdAt: schema.users.createdAt,
+          updatedAt: schema.users.updatedAt,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.id, parseInt(validatedData.userId)));
 
       if (!updatedUser) {
         return res.status(404).json({
@@ -142,12 +175,11 @@ const usersController = {
           message: "User not found",
         });
       }
-      const { _id, ...rest } = updatedUser;
-      const transformedUser = { id: _id, ...rest };
+
       return res.status(200).json({
         success: true,
         message: "User updated successfully",
-        data: transformedUser,
+        data: updatedUser,
       });
     } catch (error) {
       if (error.name === "ZodError") {
@@ -157,7 +189,7 @@ const usersController = {
           errors: error.errors,
         });
       }
-      // console.error("Error updating user:", error);
+      console.error("Error updating user:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -169,8 +201,14 @@ const usersController = {
   deleteUser: async (req, res) => {
     try {
       const validatedData = userSchema.delete.parse(req.params);
+      const userId = parseInt(validatedData.userId);
 
-      const user = await User.findById(validatedData.userId);
+      // Check if user exists
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, userId));
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -178,7 +216,8 @@ const usersController = {
         });
       }
 
-      await User.findByIdAndDelete(validatedData.userId);
+      // Delete user
+      await db.delete(schema.users).where(eq(schema.users.id, userId));
 
       return res.status(200).json({
         success: true,
@@ -192,7 +231,7 @@ const usersController = {
           errors: error.errors,
         });
       }
-      // console.error("Error deleting user:", error);
+      console.error("Error deleting user:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -205,7 +244,12 @@ const usersController = {
     try {
       const validatedData = userSchema.login.parse(req.body);
 
-      const user = await User.findOne({ email: validatedData.email });
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, validatedData.email))
+        .limit(1);
+
       if (!user) {
         return res.status(400).json({
           success: false,
@@ -225,7 +269,7 @@ const usersController = {
       }
 
       const payload = {
-        id: user._id,
+        id: user.id,
         role: user.role,
         email: user.email,
         firstName: user.firstName,
@@ -241,7 +285,7 @@ const usersController = {
         message: "Logged in successfully",
         token,
         data: {
-          id: user._id,
+          id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
@@ -256,7 +300,7 @@ const usersController = {
           errors: error.errors,
         });
       }
-      // console.error("Login error:", error);
+      console.error("Login error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error",
@@ -269,7 +313,11 @@ const usersController = {
     try {
       const validatedData = userSchema.forgetPassowd.parse(req.body);
 
-      const user = await User.findOne({ email: validatedData.email });
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, validatedData.email))
+        .limit(1);
 
       if (!user) {
         return res.status(404).json({
@@ -280,8 +328,11 @@ const usersController = {
 
       const otp = generateOTP();
 
-      user.otp = otp;
-      await user.save();
+      // Update OTP in database
+      await db
+        .update(schema.users)
+        .set({ otp, updatedAt: new Date() })
+        .where(eq(schema.users.email, user.email));
 
       const emailDelivered = await sendEmail(user.email, `Your OTP: ${otp}`);
 
@@ -291,8 +342,9 @@ const usersController = {
           message: `Unable to send email: ${emailDelivered.message}`,
         });
       }
+
       const payload = {
-        id: user._id,
+        id: user.id,
         role: user.role,
         email: user.email,
       };
@@ -316,7 +368,7 @@ const usersController = {
           errors: error.errors,
         });
       }
-      // console.error("Forgot password error:", error);
+      console.error("Forgot password error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal Server Error",
@@ -329,11 +381,16 @@ const usersController = {
     try {
       const { token, otp } = userSchema.confirmOtp.parse(req.body);
 
-      // 🔹 Decode token from body instead of req.user
+      // Decode token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const id = decoded.id;
 
-      const user = await User.findById(id);
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, id))
+        .limit(1);
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -348,11 +405,14 @@ const usersController = {
         });
       }
 
-      user.otp = null;
-      await user.save();
+      // Clear OTP after confirmation
+      await db
+        .update(schema.users)
+        .set({ otp: null, updatedAt: new Date() })
+        .where(eq(schema.users.id, id));
 
       const payload = {
-        id: user._id,
+        id: user.id,
         role: user.role,
         email: user.email,
       };
@@ -380,6 +440,7 @@ const usersController = {
           message: "Invalid or expired token",
         });
       }
+      console.error("Confirm OTP error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal Server Error",
@@ -393,7 +454,7 @@ const usersController = {
         req.body
       );
 
-      // 🔹 Decode token from body
+      // Decode token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const id = decoded.id;
 
@@ -404,7 +465,12 @@ const usersController = {
         });
       }
 
-      const user = await User.findById(id);
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, id))
+        .limit(1);
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -415,9 +481,15 @@ const usersController = {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      user.password = hashedPassword;
-      user.otp = null;
-      await user.save();
+      // Update password
+      await db
+        .update(schema.users)
+        .set({
+          password: hashedPassword,
+          otp: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.users.id, id));
 
       return res.status(200).json({
         success: true,
@@ -437,6 +509,7 @@ const usersController = {
           message: "Invalid or expired token",
         });
       }
+      console.error("New password error:", error);
       return res.status(500).json({
         success: false,
         message: "Internal Server Error",

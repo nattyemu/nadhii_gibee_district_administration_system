@@ -3,7 +3,7 @@ import React, { useState } from "react";
 const LeadershipTeam = () => {
   const [activeDepartment, setActiveDepartment] = useState("all");
   const [selectedLeader, setSelectedLeader] = useState(null);
-  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState("grid");
 
   const leaders = [
     {

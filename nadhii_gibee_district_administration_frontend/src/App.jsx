@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated() ? children : <Navigate to="/admin" replace />;
 };
 
-// Protected Route component for login page
+// Protected Route
 const LoginRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated() ? <Navigate to="/dashboard" replace /> : children;
